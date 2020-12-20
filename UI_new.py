@@ -8,7 +8,7 @@ class LoginWindow(tk.Frame):
 
     def __init__(self, master):
         self.master = master
-        tk.Frame.__init__(self, bg="blue")
+        tk.Frame.__init__(self)
         self.grid()
         self.createWidgets()
     
