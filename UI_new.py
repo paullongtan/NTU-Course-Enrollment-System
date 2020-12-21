@@ -2,6 +2,7 @@ import tkinter as tk
 import tkinter.font as tkFont
 from tkinter import messagebox
 from tkinter import ttk
+SCHOOL_YEAR = 109
 
 def credit_no_credit(finished, required_subjects):
     # 回傳已經修了多少學分、剩餘必修學分、尚未完成必修
@@ -175,7 +176,7 @@ class MainWindow(tk.Frame):
         self.userData = tk.LabelFrame(text="PERSONAL DATA", font="TimesNewRoman 16 bold")
         self.userData.config(height=220, width=600, relief="flat", bd=10)
         self.userData.config(highlightbackground="#888888", highlightthickness=5)
-        self.userData.place(x=45, y=45)
+        self.userData.place(x=45, y=40)
 
         self.userName = tk.Label(self.userData, text="● 姓名：%s" %self.user, font="標楷體")
         self.userName.place(x=10, y=10)
@@ -189,13 +190,13 @@ class MainWindow(tk.Frame):
         self.courseTable = tk.LabelFrame()
         self.courseTable.config(height=675, width=540, relief="flat", bd=0)
         self.courseTable.config(highlightbackground="#888888", highlightthickness=5)
-        self.courseTable.place(x=680, y=45)
+        self.courseTable.place(x=680, y=40)
         self.lastYearBtn = tk.Button(text="⇦", font="標楷體 24 bold", relief="flat")
-        self.lastYearBtn.place(x=900, y=710, anchor=tk.CENTER)
+        self.lastYearBtn.place(x=900, y=735, anchor=tk.CENTER)
         self.nextYearBtn = tk.Button(text="⇨", font="標楷體 24 bold", relief="flat")
-        self.nextYearBtn.place(x=1120, y=710, anchor=tk.CENTER)
-        self.lastYearBtn = tk.Label(text="%s"%self.userGrade, font="標楷體 20")
-        self.lastYearBtn.place(x=1010, y=710, anchor=tk.CENTER)
+        self.nextYearBtn.place(x=1120, y=735, anchor=tk.CENTER)
+        self.yearLabel = tk.Label(text="%s"%self.userGrade, font="標楷體 20")
+        self.yearLabel.place(x=1010, y=735, anchor=tk.CENTER)
 
         days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         lessonCode = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "A", "B", "C", "D"]
@@ -209,10 +210,17 @@ class MainWindow(tk.Frame):
             elif int(i%16) == 0:
                 curriculum.append(tk.Label(self.courseTable, text="%s"%days[int(i/16) - 1], fg="#000000"))
             else:
-                curriculum.append(tk.Button(self.courseTable, text="", bd=1))
+                curriculum.append(tk.Button(self.courseTable, text="", fg="#000000", wraplength=70))
             
             curriculum[i].config(height=2, width=12)
             curriculum[i].grid(row=int(i%16), column=int(i/16))
+        
+        for i in range(len(self.pastCourse)):
+            for j in range(len(required_subjects)):
+                if(required_subjects[j][0] == self.pastCourse[i] and int(int(required_subjects[j][2]) / 10) == (SCHOOL_YEAR - int(year) + 1)):
+                    for i in range(int(required_subjects[j][1])):
+                        curriculum[int(required_subjects[j][3]) + i].config(text="%s"%required_subjects[j][0])
+                    break
 
 appUser = ""
 root = tk.Tk()
