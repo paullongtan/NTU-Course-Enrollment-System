@@ -3,6 +3,23 @@ import tkinter.font as tkFont
 from tkinter import messagebox
 from tkinter import ttk
 
+def credit_no_credit(finished, required_subjects):
+    # 回傳已經修了多少學分、剩餘必修學分、尚未完成必修
+    # print(finished)
+    # print(required_subjects)
+    credit = 0
+    notfinished = []
+    no_credit = 0
+    pastCourse = []
+    for i in range(len(required_subjects)):
+        if finished[required_subjects[i][0]] == 1:
+            credit += int(required_subjects[i][1])
+            pastCourse.append(required_subjects[i][0])
+        else:
+            notfinished.append(required_subjects[i][0])
+            no_credit += int(required_subjects[i][1])
+    return credit, no_credit, notfinished, pastCourse
+
 
 class LoginWindow(tk.Frame):
 
@@ -112,11 +129,48 @@ class MainWindow(tk.Frame):
     def createWindow(self):
         with open(file="%s.txt" %self.user, mode="r", encoding="utf-8") as file:
             data = file.readline().rstrip("\n").split(",")
-        print(data)
-        department = data[0]
+        
+        self.department = data[0]
         year = data[1]
         grade = {"109":"大一", "108":"大二", "107":"大三", "106":"大四", "105":"大五"}
-        userGrade = grade[year]
+        self.userGrade = grade[year]
+        
+        # 載入該系必修、選修資料庫
+        with open(file="%s%s.txt" %(self.department, year), mode="r", encoding="utf-8") as file:
+            line = file.readline().rstrip("\n").split()
+            if line[0] == self.department and line[1] == year:
+                print("已替您載入%s系 %s學年度必修與選修資料庫" %(self.department, year))
+            required = file.readline().split()
+            required_credit = required[1]
+            required_subjects = []
+            
+            while(True):
+                a = file.readline().split()
+                if a[0] == "系定選修":
+                    elective_credit = a[1]
+                    break
+                required_subjects.append(a)
+            # print(required_subjects)
+
+        # 建立已完成課程名單
+        finished = dict()
+        for i in range(len(required_subjects)):
+            finished[required_subjects[i][0]] = 0
+
+        with open(file="%s.txt" %self.user, mode="r", encoding="utf-8") as file:
+            line = file.readline().rstrip("\n").split(",")
+            department = line[0]
+            year = line[1]
+            print("您是%s系%s年入學的，已替您載入你專屬的修課紀錄" %(self.department, year))
+            for line in file:
+                line = line.strip("\n")
+                finished[line] = 1
+
+        # 計算已修的必修課程學分數、剩餘必修學分、未完成必修課
+        self.credit, self.no_credit, self.not_finished, self.pastCourse = credit_no_credit(finished, required_subjects)
+
+        print(self.credit, self.no_credit, self.not_finished, self.pastCourse)
+        
         
         self.userData = tk.LabelFrame(text="PERSONAL DATA", font="TimesNewRoman 16 bold")
         self.userData.config(height=220, width=400, relief="flat", bd=10)
@@ -125,11 +179,11 @@ class MainWindow(tk.Frame):
 
         self.userName = tk.Label(self.userData, text="● 姓名：%s" %self.user, font="標楷體")
         self.userName.place(x=10, y=10)
-        self.userDpt = tk.Label(self.userData, text="● 系級：%s系 %s" %(department, userGrade), font="標楷體")
+        self.userDpt = tk.Label(self.userData, text="● 系級：%s系 %s" %(self.department, self.userGrade), font="標楷體")
         self.userDpt.place(x=10, y=35)
-        self.creditEarned = tk.Label(self.userData, text="● 已修習學分數：", font="標楷體")
+        self.creditEarned = tk.Label(self.userData, text="● 已修習學分數：%s" %self.credit, font="標楷體")
         self.creditEarned.place(x=10, y=60)
-        self.creditLack = tk.Label(self.userData, text="● 尚需學分數：", font="標楷體")
+        self.creditLack = tk.Label(self.userData, text="● 尚需學分數： %s" %self.no_credit, font="標楷體")
         self.creditLack.place(x=10, y=110)
 
         self.courseTable = tk.LabelFrame()
