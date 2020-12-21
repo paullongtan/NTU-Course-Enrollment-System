@@ -39,7 +39,7 @@ class LoginWindow(tk.Frame):
                 nameList[i] = nameList[i].rstrip("\n")
             
             if user in nameList:
-                self.openMain()
+                self.master.destroy()
             else:
                 self.signUpWin = tk.Toplevel(self.master)
                 self.app = SignUpWindow(self.signUpWin, user)
