@@ -128,52 +128,8 @@ class MainWindow(tk.Frame):
         self.createWindow()
     
     def createWindow(self):
-        with open(file="%s.txt" %self.user, mode="r", encoding="utf-8") as file:
-            data = file.readline().rstrip("\n").split(",")
         
-        self.department = data[0]
-        year = data[1]
-        grade = {"109":"大一", "108":"大二", "107":"大三", "106":"大四", "105":"大五"}
-        self.userGrade = grade[year]
-        semester = {1:"上", 2:"下"}
-        
-        # 載入該系必修、選修資料庫
-        with open(file="%s%s.txt" %(self.department, year), mode="r", encoding="utf-8") as file:
-            line = file.readline().rstrip("\n").split()
-            if line[0] == self.department and line[1] == year:
-                print("已替您載入%s系 %s學年度必修與選修資料庫" %(self.department, year))
-            required = file.readline().split()
-            required_credit = required[1]
-            required_subjects = []
-            
-            while(True):
-                a = file.readline().split()
-                if a[0] == "系定選修":
-                    elective_credit = a[1]
-                    break
-                required_subjects.append(a)
-            # print(required_subjects)
-
-        # 建立已完成課程名單
-        finished = dict()
-        for i in range(len(required_subjects)):
-            finished[required_subjects[i][0]] = 0
-
-        with open(file="%s.txt" %self.user, mode="r", encoding="utf-8") as file:
-            line = file.readline().rstrip("\n").split(",")
-            department = line[0]
-            year = line[1]
-            print("您是%s系%s年入學的，已替您載入你專屬的修課紀錄" %(self.department, year))
-            for line in file:
-                line = line.strip("\n")
-                finished[line] = 1
-
-        # 計算已修的必修課程學分數、剩餘必修學分、未完成必修課
-        self.credit, self.no_credit, self.not_finished, self.pastCourse = credit_no_credit(finished, required_subjects)
-
-        print(self.credit, self.no_credit, self.not_finished, self.pastCourse)
-        
-        
+        self.courseData()
         self.userData = tk.LabelFrame(text="PERSONAL DATA", font="TimesNewRoman 16 bold")
         self.userData.config(height=220, width=600, relief="flat", bd=10)
         self.userData.config(highlightbackground="#888888", highlightthickness=5)
@@ -196,7 +152,7 @@ class MainWindow(tk.Frame):
         self.lastYearBtn.place(x=900, y=735, anchor=tk.CENTER)
         self.nextYearBtn = tk.Button(text="⇨", font="標楷體 24 bold", relief="flat")
         self.nextYearBtn.place(x=1120, y=735, anchor=tk.CENTER)
-        self.yearLabel = tk.Label(text="%s%s"%(self.userGrade, semester[1]), font="標楷體 20")
+        self.yearLabel = tk.Label(text="%s%s"%(self.userGrade, self.semester[1]), font="標楷體 20")
         self.yearLabel.place(x=1010, y=735, anchor=tk.CENTER)
 
         days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
@@ -217,13 +173,58 @@ class MainWindow(tk.Frame):
             curriculum[i].grid(row=int(i%16), column=int(i/16))
         
         for i in range(len(self.pastCourse)):
-            for j in range(len(required_subjects)):
-                if(required_subjects[j][0] == self.pastCourse[i] and
-                   int(int(required_subjects[j][2]) / 10) == (SCHOOL_YEAR - int(year) + 1) and
-                   int(int(required_subjects[j][2]) % 10) == 1):
-                    for i in range(int(required_subjects[j][1])):
-                        curriculum[int(required_subjects[j][3]) + i].config(text="%s"%required_subjects[j][0])
+            for j in range(len(self.required_subjects)):
+                if(self.required_subjects[j][0] == self.pastCourse[i] and
+                   int(int(self.required_subjects[j][2]) / 10) == (SCHOOL_YEAR - int(self.year) + 1) and
+                   int(int(self.required_subjects[j][2]) % 10) == 1):
+                    for i in range(int(self.required_subjects[j][1])):
+                        curriculum[int(self.required_subjects[j][3]) + i].config(text="%s"%self.required_subjects[j][0])
                     break
+
+    def courseData(self):
+
+        with open(file="%s.txt" %self.user, mode="r", encoding="utf-8") as file:
+            data = file.readline().rstrip("\n").split(",")
+        
+        self.department = data[0]
+        self.year = data[1]
+        self.grade = {"109":"大一", "108":"大二", "107":"大三", "106":"大四", "105":"大五"}
+        self.userGrade = self.grade[self.year]
+        self.semester = {1:"上", 2:"下"}
+        
+        # 載入該系必修、選修資料庫
+        with open(file="%s%s.txt" %(self.department, self.year), mode="r", encoding="utf-8") as file:
+            line = file.readline().rstrip("\n").split()
+            if line[0] == self.department and line[1] == self.year:
+                print("已替您載入%s系 %s學年度必修與選修資料庫" %(self.department, self.year))
+            required = file.readline().split()
+            required_credit = required[1]
+            required_subjects = []
+            
+            while(True):
+                a = file.readline().split()
+                if a[0] == "系定選修":
+                    elective_credit = a[1]
+                    break
+                required_subjects.append(a)
+            # print(required_subjects)
+        self.required_subjects = required_subjects
+
+        # 建立已完成課程名單
+        finished = dict()
+        for i in range(len(required_subjects)):
+            finished[required_subjects[i][0]] = 0
+
+        with open(file="%s.txt" %self.user, mode="r", encoding="utf-8") as file:
+            line = file.readline().rstrip("\n").split(",")
+            print("您是%s系%s年入學的，已替您載入你專屬的修課紀錄" %(self.department, self.year))
+            for line in file:
+                line = line.strip("\n")
+                finished[line] = 1
+
+        # 計算已修的必修課程學分數、剩餘必修學分、未完成必修課
+        self.credit, self.no_credit, self.not_finished, self.pastCourse = credit_no_credit(finished, required_subjects)
+        print(self.credit, self.no_credit, self.not_finished, self.pastCourse)
 
 appUser = ""
 root = tk.Tk()
@@ -238,13 +239,11 @@ if app.newUser == True:
     win = tk.Tk()
     win.geometry("1400x780+60+10")
     main = MainWindow(win, app.signUp.user)
-    win.resizable(0, 0)
     win.title("Course Selection Supporting System")
 else:
     win = tk.Tk()
     win.geometry("1400x780+60+10")
     main = MainWindow(win, app.user)
-    win.resizable(0, 0)
     win.title("Course Selection Supporting System")
 
 
