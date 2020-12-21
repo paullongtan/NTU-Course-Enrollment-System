@@ -119,9 +119,9 @@ class MainWindow(tk.Frame):
         userGrade = grade[year]
         
         self.userData = tk.LabelFrame(text="PERSONAL DATA", font="TimesNewRoman 16 bold")
-        self.userData.config(height=220, width=400, relief="flat", bd=10)
+        self.userData.config(height=220, width=600, relief="flat", bd=10)
         self.userData.config(highlightbackground="#888888", highlightthickness=5)
-        self.userData.place(x=25, y=25)
+        self.userData.place(x=45, y=45)
 
         self.userName = tk.Label(self.userData, text="● 姓名：%s" %self.user, font="標楷體")
         self.userName.place(x=10, y=10)
@@ -135,7 +135,13 @@ class MainWindow(tk.Frame):
         self.courseTable = tk.LabelFrame()
         self.courseTable.config(height=675, width=540, relief="flat", bd=0)
         self.courseTable.config(highlightbackground="#888888", highlightthickness=5)
-        self.courseTable.place(x=440, y=25)
+        self.courseTable.place(x=680, y=45)
+        self.lastYearBtn = tk.Button(text="⇦", font="標楷體 24 bold", relief="flat")
+        self.lastYearBtn.place(x=900, y=710, anchor=tk.CENTER)
+        self.nextYearBtn = tk.Button(text="⇨", font="標楷體 24 bold", relief="flat")
+        self.nextYearBtn.place(x=1120, y=710, anchor=tk.CENTER)
+        self.lastYearBtn = tk.Label(text="%s"%userGrade, font="標楷體 20")
+        self.lastYearBtn.place(x=1010, y=710, anchor=tk.CENTER)
 
         days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         lessonCode = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "A", "B", "C", "D"]
@@ -149,9 +155,9 @@ class MainWindow(tk.Frame):
             elif int(i%16) == 0:
                 curriculum.append(tk.Label(self.courseTable, text="%s"%days[int(i/16) - 1], fg="#000000"))
             else:
-                curriculum.append(tk.Button(self.courseTable, text=""))
+                curriculum.append(tk.Button(self.courseTable, text="", bd=1))
             
-            curriculum[i].config(height=2, width=11)
+            curriculum[i].config(height=2, width=12)
             curriculum[i].grid(row=int(i%16), column=int(i/16))
 
 appUser = ""
