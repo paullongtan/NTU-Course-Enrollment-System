@@ -135,6 +135,7 @@ class MainWindow(tk.Frame):
         year = data[1]
         grade = {"109":"大一", "108":"大二", "107":"大三", "106":"大四", "105":"大五"}
         self.userGrade = grade[year]
+        semester = {1:"上", 2:"下"}
         
         # 載入該系必修、選修資料庫
         with open(file="%s%s.txt" %(self.department, year), mode="r", encoding="utf-8") as file:
@@ -195,7 +196,7 @@ class MainWindow(tk.Frame):
         self.lastYearBtn.place(x=900, y=735, anchor=tk.CENTER)
         self.nextYearBtn = tk.Button(text="⇨", font="標楷體 24 bold", relief="flat")
         self.nextYearBtn.place(x=1120, y=735, anchor=tk.CENTER)
-        self.yearLabel = tk.Label(text="%s"%self.userGrade, font="標楷體 20")
+        self.yearLabel = tk.Label(text="%s%s"%(self.userGrade, semester[1]), font="標楷體 20")
         self.yearLabel.place(x=1010, y=735, anchor=tk.CENTER)
 
         days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
@@ -217,7 +218,9 @@ class MainWindow(tk.Frame):
         
         for i in range(len(self.pastCourse)):
             for j in range(len(required_subjects)):
-                if(required_subjects[j][0] == self.pastCourse[i] and int(int(required_subjects[j][2]) / 10) == (SCHOOL_YEAR - int(year) + 1)):
+                if(required_subjects[j][0] == self.pastCourse[i] and
+                   int(int(required_subjects[j][2]) / 10) == (SCHOOL_YEAR - int(year) + 1) and
+                   int(int(required_subjects[j][2]) % 10) == 1):
                     for i in range(int(required_subjects[j][1])):
                         curriculum[int(required_subjects[j][3]) + i].config(text="%s"%required_subjects[j][0])
                     break
