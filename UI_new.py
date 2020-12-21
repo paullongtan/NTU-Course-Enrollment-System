@@ -30,6 +30,7 @@ class LoginWindow(tk.Frame):
     
     def UserCheck(self):
         user = self.txtName.get("1.0", "end-1c")
+        self.user = user
         print(user)
 
         try:
@@ -39,15 +40,18 @@ class LoginWindow(tk.Frame):
                 nameList[i] = nameList[i].rstrip("\n")
             
             if user in nameList:
+                self.newUser = False
                 self.master.destroy()
             else:
+                self.newUser = True
                 self.signUpWin = tk.Toplevel(self.master)
-                self.app = SignUpWindow(self.signUpWin, user)
+                self.signUp = SignUpWindow(self.signUpWin, user)
         except:
             with open(file="name.txt", mode="w", encoding="utf-8") as file:
                 print("New file")
+            self.newUser = True
             self.signUpWin = tk.Toplevel(self)
-            self.app = SignUpWindow(self.signUpWin, user)
+            self.signUp = SignUpWindow(self.signUpWin, user)
 
         
     def openMain(self):
@@ -86,6 +90,7 @@ class SignUpWindow(tk.Frame):
 
     def UserInfo(self):
         name = self.txtSignName.get("1.0", "end-1c")
+        self.master = name
         department = self.comboDpt.get()
         year = self.comboYear.get()
         print(name, department, year)
@@ -95,24 +100,32 @@ class SignUpWindow(tk.Frame):
             file.write("%s,%s\n" %(department, year))
         
         tk.messagebox.showinfo('註冊','已替您建立您的帳戶')
-        self.master.destroy()
         root.destroy()
 
 class MainWindow(tk.Frame):
 
-    def __init__(self, master):
+    def __init__(self, master, user):
         self.master = master
+        self.user = user
         self.createWindow()
     
     def createWindow(self):
+        with open(file="%s.txt" %self.user, mode="r", encoding="utf-8") as file:
+            data = file.readline().rstrip("\n").split(",")
+        print(data)
+        department = data[0]
+        year = data[1]
+        grade = {"109":"大一", "108":"大二", "107":"大三", "106":"大四", "105":"大五"}
+        userGrade = grade[year]
+        
         self.userData = tk.LabelFrame(text="PERSONAL DATA", font="TimesNewRoman 16 bold")
         self.userData.config(height=220, width=400, relief="flat", bd=10)
         self.userData.config(highlightbackground="#888888", highlightthickness=5)
         self.userData.place(x=25, y=25)
 
-        self.userName = tk.Label(self.userData, text="● 姓名：吳承翰", font="標楷體")
+        self.userName = tk.Label(self.userData, text="● 姓名：%s" %self.user, font="標楷體")
         self.userName.place(x=10, y=10)
-        self.userDpt = tk.Label(self.userData, text="● 系級：經濟系 大一", font="標楷體")
+        self.userDpt = tk.Label(self.userData, text="● 系級：%s系 %s" %(department, userGrade), font="標楷體")
         self.userDpt.place(x=10, y=35)
         self.creditEarned = tk.Label(self.userData, text="● 已修習學分數：", font="標楷體")
         self.creditEarned.place(x=10, y=60)
@@ -141,17 +154,28 @@ class MainWindow(tk.Frame):
             curriculum[i].config(height=2, width=11)
             curriculum[i].grid(row=int(i%16), column=int(i/16))
 
+appUser = ""
 root = tk.Tk()
 root.geometry('+500+400')  
 app = LoginWindow(root)
 app.master.title("台大修課檢驗系統")
 app.mainloop()
 
-win = tk.Tk()
-win.geometry("1400x780+60+10")
-main = MainWindow(win)
-win.resizable(0, 0)
-win.title("Course Selection Supporting System")
+print(type(app.master))
+
+if app.newUser == True:
+    win = tk.Tk()
+    win.geometry("1400x780+60+10")
+    main = MainWindow(win, app.signUp.user)
+    win.resizable(0, 0)
+    win.title("Course Selection Supporting System")
+else:
+    win = tk.Tk()
+    win.geometry("1400x780+60+10")
+    main = MainWindow(win, app.user)
+    win.resizable(0, 0)
+    win.title("Course Selection Supporting System")
+
 
 
 
