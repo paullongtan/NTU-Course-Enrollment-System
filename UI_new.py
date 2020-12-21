@@ -194,7 +194,7 @@ class MainWindow(tk.Frame):
         self.lastYearBtn.place(x=900, y=710, anchor=tk.CENTER)
         self.nextYearBtn = tk.Button(text="⇨", font="標楷體 24 bold", relief="flat")
         self.nextYearBtn.place(x=1120, y=710, anchor=tk.CENTER)
-        self.lastYearBtn = tk.Label(text="%s"%userGrade, font="標楷體 20")
+        self.lastYearBtn = tk.Label(text="%s"%self.userGrade, font="標楷體 20")
         self.lastYearBtn.place(x=1010, y=710, anchor=tk.CENTER)
 
         days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
