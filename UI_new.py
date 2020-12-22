@@ -168,7 +168,10 @@ class MainWindow(tk.Frame):
         for i in range(17, 112):
             if i % 16 != 0:
                 self.curriculum[i].config(bg=self.defaultBG)
-        courseName = self.unchosenCourse.get(self.unchosenCourse.curselection())
+        if self.unchosenCourse.curselection() != ():
+            courseName = self.unchosenCourse.get(self.unchosenCourse.curselection())
+        else:
+            courseName = self.chosenCourse.get(self.chosenCourse.curselection())
         for i in range(len(self.required_subjects)):
             if self.required_subjects[i][0] == courseName:
                 if(self.gradeDisplay == int(int(self.required_subjects[i][2]) / 10) and
@@ -182,6 +185,18 @@ class MainWindow(tk.Frame):
         for i in range(17, 112):
             if i % 16 != 0:
                 self.curriculum[i].config(bg=self.defaultBG)
+    
+    def left_confirm(self):
+        self.cancel()
+        courseName = self.unchosenCourse.get(self.unchosenCourse.curselection())
+        self.unchosenCourse.delete(self.unchosenCourse.curselection())
+        self.chosenCourse.insert("end", courseName)
+    
+    def right_confirm(self):
+        self.cancel()
+        courseName = self.chosenCourse.get(self.chosenCourse.curselection())
+        self.chosenCourse.delete(self.chosenCourse.curselection())
+        self.unchosenCourse.insert("end", courseName)
     
     def createWindow(self):
         
@@ -235,13 +250,13 @@ class MainWindow(tk.Frame):
         if self.gradeDisplay == 1:
             self.lastSemesterBtn.config(state="disabled")
         
-        self.leftFrame = tk.LabelFrame()
-        self.leftFrame.config(height=200, width=200, relief="flat", bd=0)
+        self.leftFrame = tk.LabelFrame(text="未選擇課程列表", font="標楷體 16")
+        self.leftFrame.config(height=350, width=200, relief="flat", bd=0)
         self.leftFrame.config(highlightbackground="#888888", highlightthickness=3)
-        self.leftFrame.place(x=45, y=300)
+        self.leftFrame.place(x=45, y=280)
         self.sb1 = tk.Scrollbar(self.leftFrame)
         self.sb1.pack(side="right", fill="y")
-        self.unchosenCourse = tk.Listbox(self.leftFrame, width=20, height=10, yscrollcommand=self.sb1.set)
+        self.unchosenCourse = tk.Listbox(self.leftFrame, width=20, height=24, yscrollcommand=self.sb1.set)
         self.unchosenCourse.pack(side="left")
         self.sb1.config(command=self.unchosenCourse.yview)
         for i in range(len(self.required_subjects)):
@@ -249,11 +264,30 @@ class MainWindow(tk.Frame):
                 # if self.required_subjects[i][0] == self.pastCourse[j]:
                     # break
                 # elif j == len(self.pastCourse) - 1:
+                    # self.unchosenCourse.insert("end", self.pastCourse[j])
                 self.unchosenCourse.insert("end", self.pastCourse[j])
         self.unchosenCourse.bind("<ButtonRelease-1>", self.high_light_course)
         
-        self.cancelBtn = tk.Button(text="取消", height=1, width=10, command=self.cancel)
-        self.cancelBtn.place(x=45, y=600)
+        self.leftCancelBtn = tk.Button(text="取消", height=1, width=8, command=self.cancel)
+        self.leftCancelBtn.place(x=52, y=710)
+        self.leftConfirmBtn = tk.Button(text="加選", height=1, width=8, command=self.left_confirm)
+        self.leftConfirmBtn.place(x=136, y=710)
+        
+        self.rightFrame = tk.LabelFrame(text="已選擇課程列表", font="標楷體 16")
+        self.rightFrame.config(height=350, width=200, relief="flat", bd=0)
+        self.rightFrame.config(highlightbackground="#888888", highlightthickness=3)
+        self.rightFrame.place(x=300, y=280)
+        self.sb2 = tk.Scrollbar(self.rightFrame)
+        self.sb2.pack(side="right", fill="y")
+        self.chosenCourse = tk.Listbox(self.rightFrame, width=20, height=24, yscrollcommand=self.sb2.set)
+        self.chosenCourse.pack(side="left")
+        self.sb2.config(command=self.chosenCourse.yview)
+        self.chosenCourse.bind("<ButtonRelease-1>", self.high_light_course)
+        
+        self.rightCancelBtn = tk.Button(text="取消", height=1, width=8, command=self.cancel)
+        self.rightCancelBtn.place(x=307, y=710)
+        self.rightConfirmBtn = tk.Button(text="退選", height=1, width=8, command=self.right_confirm)
+        self.rightConfirmBtn.place(x=391, y=710)
         
     def courseData(self):
 
