@@ -177,8 +177,10 @@ class MainWindow(tk.Frame):
                 if(self.required_subjects[j][0] == self.pastCourse[i] and
                    int(int(self.required_subjects[j][2]) / 10) == (SCHOOL_YEAR - int(self.year) + 1) and
                    int(int(self.required_subjects[j][2]) % 10) == 1):
-                    for i in range(int(self.required_subjects[j][1])):
-                        curriculum[int(self.required_subjects[j][3]) + i].config(text="%s"%self.required_subjects[j][0])
+                    a = self.required_subjects[j][3].split(",")
+                    for k in range(int(len(a) / 2)):
+                        for m in range(int(a[k * 2 + 1])):
+                            curriculum[int(a[k * 2]) + m].config(text="%s"%self.required_subjects[j][0])
                     break
 
     def courseData(self):
