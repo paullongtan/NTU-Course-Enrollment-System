@@ -129,7 +129,7 @@ class MainWindow(tk.Frame):
     def courseShow(self):
         for i in range(17, 112):
             if i % 16 != 0:
-                self.curriculum[i].config(text="")
+                self.curriculum[i].config(text="", bg=self.defaultBG)
         for i in range(len(self.pastCourse)):
             for j in range(len(self.required_subjects)):
                 if(self.required_subjects[j][0] == self.pastCourse[i] and
@@ -164,6 +164,25 @@ class MainWindow(tk.Frame):
         if self.gradeDisplay == 1 and self.semesterDisplay == 2:
             self.lastSemesterBtn.config(state="normal")
     
+    def high_light_course(self, event):
+        for i in range(17, 112):
+            if i % 16 != 0:
+                self.curriculum[i].config(bg=self.defaultBG)
+        courseName = self.unchosenCourse.get(self.unchosenCourse.curselection())
+        for i in range(len(self.required_subjects)):
+            if self.required_subjects[i][0] == courseName:
+                if(self.gradeDisplay == int(int(self.required_subjects[i][2]) / 10) and
+                   self.semesterDisplay == int(int(self.required_subjects[i][2]) % 10)):
+                    a = self.required_subjects[i][3].split(",")
+                    for j in range(int(len(a) / 2)):
+                        for k in range(int(a[j * 2 + 1])):
+                            self.curriculum[int(a[j * 2]) + k].config(bg="red")
+    
+    def cancel(self):
+        for i in range(17, 112):
+            if i % 16 != 0:
+                self.curriculum[i].config(bg=self.defaultBG)
+    
     def createWindow(self):
         
         self.courseData()
@@ -171,6 +190,7 @@ class MainWindow(tk.Frame):
         self.userData.config(height=220, width=600, relief="flat", bd=10)
         self.userData.config(highlightbackground="#888888", highlightthickness=5)
         self.userData.place(x=45, y=40)
+        self.defaultBG = self.userData.cget("bg")
 
         self.userName = tk.Label(self.userData, text="● 姓名：%s" %self.user, font="標楷體")
         self.userName.place(x=10, y=10)
@@ -214,7 +234,27 @@ class MainWindow(tk.Frame):
         self.courseShow()
         if self.gradeDisplay == 1:
             self.lastSemesterBtn.config(state="disabled")
-
+        
+        self.leftFrame = tk.LabelFrame()
+        self.leftFrame.config(height=200, width=200, relief="flat", bd=0)
+        self.leftFrame.config(highlightbackground="#888888", highlightthickness=3)
+        self.leftFrame.place(x=45, y=300)
+        self.sb1 = tk.Scrollbar(self.leftFrame)
+        self.sb1.pack(side="right", fill="y")
+        self.unchosenCourse = tk.Listbox(self.leftFrame, width=20, height=10, yscrollcommand=self.sb1.set)
+        self.unchosenCourse.pack(side="left")
+        self.sb1.config(command=self.unchosenCourse.yview)
+        for i in range(len(self.required_subjects)):
+            for j in range(len(self.pastCourse)):
+                # if self.required_subjects[i][0] == self.pastCourse[j]:
+                    # break
+                # elif j == len(self.pastCourse) - 1:
+                self.unchosenCourse.insert("end", self.pastCourse[j])
+        self.unchosenCourse.bind("<ButtonRelease-1>", self.high_light_course)
+        
+        self.cancelBtn = tk.Button(text="取消", height=1, width=10, command=self.cancel)
+        self.cancelBtn.place(x=45, y=600)
+        
     def courseData(self):
 
         with open(file="%s.txt" %self.user, mode="r", encoding="utf-8") as file:
