@@ -21,7 +21,6 @@ def credit_no_credit(finished, required_subjects):
             no_credit += int(required_subjects[i][1])
     return credit, no_credit, notfinished, pastCourse
 
-
 class LoginWindow(tk.Frame):
 
     def __init__(self, master):
@@ -127,6 +126,44 @@ class MainWindow(tk.Frame):
         self.user = user
         self.createWindow()
     
+    def courseShow(self):
+        for i in range(17, 112):
+            if i % 16 != 0:
+                self.curriculum[i].config(text="")
+        for i in range(len(self.pastCourse)):
+            for j in range(len(self.required_subjects)):
+                if(self.required_subjects[j][0] == self.pastCourse[i] and
+                   int(int(self.required_subjects[j][2]) / 10) == self.gradeDisplay and
+                   int(int(self.required_subjects[j][2]) % 10) == self.semesterDisplay):
+                    a = self.required_subjects[j][3].split(",")
+                    for k in range(int(len(a) / 2)):
+                        for m in range(int(a[k * 2 + 1])):
+                            self.curriculum[int(a[k * 2]) + m].config(text="%s"%self.required_subjects[j][0])
+                    break
+        self.yearLabel.config(text="%s%s"%(self.gradeTrans[self.gradeDisplay], self.semesterTrans[self.semesterDisplay]))
+    
+    def lastSemester(self):
+        self.semesterDisplay = self.semesterDisplay % 2 + 1
+        if self.semesterDisplay == 2:
+            self.gradeDisplay -= 1
+        self.courseShow()
+        
+        if self.gradeDisplay == 1 and self.semesterDisplay == 1:
+            self.lastSemesterBtn.config(state="disabled")
+        if self.gradeDisplay == 4 and self.semesterDisplay == 1:
+            self.nextSemesterBtn.config(state="normal")
+    
+    def nextSemester(self):
+        self.semesterDisplay = self.semesterDisplay % 2 + 1
+        if self.semesterDisplay == 1:
+            self.gradeDisplay += 1
+        self.courseShow()
+        
+        if self.gradeDisplay == 4 and self.semesterDisplay == 2:
+            self.nextSemesterBtn.config(state="disabled")
+        if self.gradeDisplay == 1 and self.semesterDisplay == 2:
+            self.lastSemesterBtn.config(state="normal")
+    
     def createWindow(self):
         
         self.courseData()
@@ -143,45 +180,40 @@ class MainWindow(tk.Frame):
         self.creditEarned.place(x=10, y=60)
         self.creditLack = tk.Label(self.userData, text="● 尚需學分數： %s" %self.no_credit, font="標楷體")
         self.creditLack.place(x=10, y=110)
-
+        
+        self.semesterDisplay  = 1
+        self.gradeDisplay = SCHOOL_YEAR - int(self.year) + 1
         self.courseTable = tk.LabelFrame()
         self.courseTable.config(height=675, width=540, relief="flat", bd=0)
         self.courseTable.config(highlightbackground="#888888", highlightthickness=5)
         self.courseTable.place(x=680, y=40)
-        self.lastYearBtn = tk.Button(text="⇦", font="標楷體 24 bold", relief="flat")
-        self.lastYearBtn.place(x=900, y=735, anchor=tk.CENTER)
-        self.nextYearBtn = tk.Button(text="⇨", font="標楷體 24 bold", relief="flat")
-        self.nextYearBtn.place(x=1120, y=735, anchor=tk.CENTER)
-        self.yearLabel = tk.Label(text="%s%s"%(self.userGrade, self.semester[1]), font="標楷體 20")
+        self.lastSemesterBtn = tk.Button(text="⇦", font="標楷體 24 bold", relief="flat", command=self.lastSemester)
+        self.lastSemesterBtn.place(x=900, y=735, anchor=tk.CENTER)
+        self.nextSemesterBtn = tk.Button(text="⇨", font="標楷體 24 bold", relief="flat", command=self.nextSemester)
+        self.nextSemesterBtn.place(x=1120, y=735, anchor=tk.CENTER)
+        self.yearLabel = tk.Label(text="", font="標楷體 20")
         self.yearLabel.place(x=1010, y=735, anchor=tk.CENTER)
 
         days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         lessonCode = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "A", "B", "C", "D"]
-        curriculum = []
+        self.curriculum = []
         for i in range(112):
             if i < 16:
                 if int(i%16) == 0:
-                    curriculum.append(tk.Label(self.courseTable, text=""))
+                    self.curriculum.append(tk.Label(self.courseTable, text=""))
                 else:
-                    curriculum.append(tk.Label(self.courseTable, text="%s"%lessonCode[i - 1], fg="#000000"))
+                    self.curriculum.append(tk.Label(self.courseTable, text="%s"%lessonCode[i - 1], fg="#000000"))
             elif int(i%16) == 0:
-                curriculum.append(tk.Label(self.courseTable, text="%s"%days[int(i/16) - 1], fg="#000000"))
+                self.curriculum.append(tk.Label(self.courseTable, text="%s"%days[int(i/16) - 1], fg="#000000"))
             else:
-                curriculum.append(tk.Button(self.courseTable, text="", fg="#000000", wraplength=70))
+                self.curriculum.append(tk.Button(self.courseTable, text="", fg="#000000", wraplength=70))
             
-            curriculum[i].config(height=2, width=12)
-            curriculum[i].grid(row=int(i%16), column=int(i/16))
+            self.curriculum[i].config(height=2, width=12)
+            self.curriculum[i].grid(row=int(i%16), column=int(i/16))
         
-        for i in range(len(self.pastCourse)):
-            for j in range(len(self.required_subjects)):
-                if(self.required_subjects[j][0] == self.pastCourse[i] and
-                   int(int(self.required_subjects[j][2]) / 10) == (SCHOOL_YEAR - int(self.year) + 1) and
-                   int(int(self.required_subjects[j][2]) % 10) == 1):
-                    a = self.required_subjects[j][3].split(",")
-                    for k in range(int(len(a) / 2)):
-                        for m in range(int(a[k * 2 + 1])):
-                            curriculum[int(a[k * 2]) + m].config(text="%s"%self.required_subjects[j][0])
-                    break
+        self.courseShow()
+        if self.gradeDisplay == 1:
+            self.lastSemesterBtn.config(state="disabled")
 
     def courseData(self):
 
@@ -192,7 +224,8 @@ class MainWindow(tk.Frame):
         self.year = data[1]
         self.grade = {"109":"大一", "108":"大二", "107":"大三", "106":"大四", "105":"大五"}
         self.userGrade = self.grade[self.year]
-        self.semester = {1:"上", 2:"下"}
+        self.semesterTrans = {1:"上", 2:"下"}
+        self.gradeTrans = {1:"大一", 2:"大二", 3:"大三", 4:"大四"}
         
         # 載入該系必修、選修資料庫
         with open(file="%s%s.txt" %(self.department, self.year), mode="r", encoding="utf-8") as file:
