@@ -152,6 +152,8 @@ class MainWindow(tk.Frame):
             self.lastSemesterBtn.config(state="disabled")
         if self.gradeDisplay == 4 and self.semesterDisplay == 1:
             self.nextSemesterBtn.config(state="normal")
+        if self.unchosenCourse.curselection() != () or self.chosenCourse.curselection() != ():
+            self.high_light_course("<ButtonRelease-1>")
     
     def nextSemester(self):
         self.semesterDisplay = self.semesterDisplay % 2 + 1
@@ -163,6 +165,8 @@ class MainWindow(tk.Frame):
             self.nextSemesterBtn.config(state="disabled")
         if self.gradeDisplay == 1 and self.semesterDisplay == 2:
             self.lastSemesterBtn.config(state="normal")
+        if self.unchosenCourse.curselection() != () or self.chosenCourse.curselection() != ():
+            self.high_light_course("<ButtonRelease-1>")
     
     def high_light_course(self, event):
         for i in range(17, 112):
@@ -186,33 +190,55 @@ class MainWindow(tk.Frame):
             if i % 16 != 0:
                 self.curriculum[i].config(bg=self.defaultBG)
     
-    def left_confirm(self):
-        self.cancel()
-        courseName = self.unchosenCourse.get(self.unchosenCourse.curselection())
-        for i in range(len(self.required_subjects)):
-            if self.required_subjects[i][0] == courseName:
-                if(self.gradeDisplay == int(int(self.required_subjects[i][2]) / 10) and
-                   self.semesterDisplay == int(int(self.required_subjects[i][2]) % 10)):
-                    a = self.required_subjects[i][3].split(",")
-                    for j in range(int(len(a) / 2)):
-                        for k in range(int(a[j * 2 + 1])):
-                            self.curriculum[int(a[j * 2]) + k].config(text="%s"%self.required_subjects[i][0])
-                    self.unchosenCourse.delete(self.unchosenCourse.curselection())
-                    self.chosenCourse.insert("end", courseName)
+    def add_course(self):
+        if self.unchosenCourse.curselection() != ():
+            timeFree = True
+            courseName = self.unchosenCourse.get(self.unchosenCourse.curselection())
+            for i in range(len(self.required_subjects)):
+                if self.required_subjects[i][0] == courseName:
+                    if(self.gradeDisplay == int(int(self.required_subjects[i][2]) / 10) and
+                       self.semesterDisplay == int(int(self.required_subjects[i][2]) % 10)):
+                        a = self.required_subjects[i][3].split(",")
+                        for j in range(int(len(a) / 2)):
+                            for k in range(int(a[j * 2 + 1])):
+                                if self.curriculum[int(a[j * 2]) + k].cget("text") != "":
+                                    timeFree = False
+                        if timeFree == True:
+                            for j in range(int(len(a) / 2)):
+                                for k in range(int(a[j * 2 + 1])):
+                                    self.curriculum[int(a[j * 2]) + k].config(text="%s"%self.required_subjects[i][0])
+                            self.cancel()
+                            self.unchosenCourse.delete(self.unchosenCourse.curselection())
+                            self.chosenCourse.insert("end", courseName)
+                            self.pastCourse.append(courseName)
+                            self.credit += int(self.required_subjects[i][1])
+                            self.creditEarned.config(text="● 已修習學分數：%s" %self.credit)
+                            self.no_credit -= int(self.required_subjects[i][1])
+                            self.creditLack.config(text="● 尚需學分數： %s" %self.no_credit)
     
-    def right_confirm(self):
-        self.cancel()
-        courseName = self.chosenCourse.get(self.chosenCourse.curselection())
-        for i in range(len(self.required_subjects)):
-            if self.required_subjects[i][0] == courseName:
-                if(self.gradeDisplay == int(int(self.required_subjects[i][2]) / 10) and
-                   self.semesterDisplay == int(int(self.required_subjects[i][2]) % 10)):
-                    a = self.required_subjects[i][3].split(",")
-                    for j in range(int(len(a) / 2)):
-                        for k in range(int(a[j * 2 + 1])):
-                            self.curriculum[int(a[j * 2]) + k].config(text="")
-                    self.chosenCourse.delete(self.chosenCourse.curselection())
-                    self.unchosenCourse.insert("end", courseName)
+    def drop_course(self):
+        if self.chosenCourse.curselection() != ():
+            self.cancel()
+            courseName = self.chosenCourse.get(self.chosenCourse.curselection())
+            for i in range(len(self.required_subjects)):
+                if self.required_subjects[i][0] == courseName:
+                    if(self.gradeDisplay == int(int(self.required_subjects[i][2]) / 10) and
+                       self.semesterDisplay == int(int(self.required_subjects[i][2]) % 10)):
+                        a = self.required_subjects[i][3].split(",")
+                        for j in range(int(len(a) / 2)):
+                            for k in range(int(a[j * 2 + 1])):
+                                self.curriculum[int(a[j * 2]) + k].config(text="")
+                        self.chosenCourse.delete(self.chosenCourse.curselection())
+                        self.unchosenCourse.insert("end", courseName)
+                        for j in range(len(self.pastCourse)):
+                            if self.pastCourse[j] == courseName:
+                                self.pastCourse.pop(j)
+                                break
+                        self.credit -= int(self.required_subjects[i][1])
+                        self.creditEarned.config(text="● 已修習學分數：%s" %self.credit)
+                        self.no_credit += int(self.required_subjects[i][1])
+                        self.creditLack.config(text="● 尚需學分數： %s" %self.no_credit)
+                    
     
     def createWindow(self):
         
@@ -277,17 +303,16 @@ class MainWindow(tk.Frame):
         self.sb1.config(command=self.unchosenCourse.yview)
         for i in range(len(self.required_subjects)):
             for j in range(len(self.pastCourse)):
-                # if self.required_subjects[i][0] == self.pastCourse[j]:
-                    # break
-                # elif j == len(self.pastCourse) - 1:
-                    # self.unchosenCourse.insert("end", self.pastCourse[j])
-                self.unchosenCourse.insert("end", self.pastCourse[j])
+                if self.required_subjects[i][0] == self.pastCourse[j]:
+                    break
+                elif j == len(self.pastCourse) - 1:
+                    self.unchosenCourse.insert("end", self.required_subjects[i][0])
         self.unchosenCourse.bind("<ButtonRelease-1>", self.high_light_course)
         
         self.leftCancelBtn = tk.Button(text="取消", height=1, width=8, command=self.cancel)
-        self.leftCancelBtn.place(x=52, y=710)
-        self.leftConfirmBtn = tk.Button(text="加選", height=1, width=8, command=self.left_confirm)
-        self.leftConfirmBtn.place(x=136, y=710)
+        self.leftCancelBtn.place(x=136, y=710)
+        self.leftConfirmBtn = tk.Button(text="加選", height=1, width=8, command=self.add_course)
+        self.leftConfirmBtn.place(x=52, y=710)
         
         self.rightFrame = tk.LabelFrame(text="已選擇課程列表", font="標楷體 16")
         self.rightFrame.config(height=350, width=200, relief="flat", bd=0)
@@ -298,12 +323,17 @@ class MainWindow(tk.Frame):
         self.chosenCourse = tk.Listbox(self.rightFrame, width=20, height=24, yscrollcommand=self.sb2.set)
         self.chosenCourse.pack(side="left")
         self.sb2.config(command=self.chosenCourse.yview)
+        for i in range(len(self.required_subjects)):
+            for j in range(len(self.pastCourse)):
+                if self.required_subjects[i][0] == self.pastCourse[j]:
+                    self.chosenCourse.insert("end", self.pastCourse[j])
+                    break
         self.chosenCourse.bind("<ButtonRelease-1>", self.high_light_course)
         
         self.rightCancelBtn = tk.Button(text="取消", height=1, width=8, command=self.cancel)
-        self.rightCancelBtn.place(x=307, y=710)
-        self.rightConfirmBtn = tk.Button(text="退選", height=1, width=8, command=self.right_confirm)
-        self.rightConfirmBtn.place(x=391, y=710)
+        self.rightCancelBtn.place(x=391, y=710)
+        self.rightConfirmBtn = tk.Button(text="退選", height=1, width=8, command=self.drop_course)
+        self.rightConfirmBtn.place(x=307, y=710)
         
     def courseData(self):
 
