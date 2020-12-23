@@ -16,6 +16,7 @@ def credit_no_credit(user):
         if line[0] == department and line[1] == year:
             print("已替您載入%s系 %s學年度必修與選修資料庫" %(department, year))
 
+        file.readline()
         required_subjects = []
         while(True):
             a = file.readline().split()
@@ -165,16 +166,34 @@ class RecordWindow(tk.Frame):
         self.sb1 = tk.Scrollbar(self.leftFrame)
         
         self.unchosenCourse = tk.Listbox(self.leftFrame, width=20, height=24, yscrollcommand=self.sb1.set)
-        self.unchosenCourse.pack(side="left")
         self.sb1.config(command=self.unchosenCourse.yview)
         for i in self.not_finished:
             self.unchosenCourse.insert("end", i)
         self.unchosenCourse.bind("<ButtonRelease-1>")
 
+        self.rightFrame = tk.LabelFrame(text="已選擇課程列表", font="標楷體 16")
+        self.rightFrame.config(highlightbackground="#888888", highlightthickness=3)
+        self.sb2 = tk.Scrollbar(self.rightFrame)
+        
+        self.chosenCourse = tk.Listbox(self.rightFrame, width=20, height=24, yscrollcommand=self.sb2.set)
+        
+        # self.sb2.config(command=self.chosenCourse.yview)
+        # for i in range(len(self.required_subjects)):
+        #     for j in range(len(self.pastCourse)):
+        #         if self.required_subjects[i][0] == self.pastCourse[j]:
+        #             self.chosenCourse.insert("end", self.pastCourse[j])
+        #             break
+        # self.chosenCourse.bind("<ButtonRelease-1>", self.high_light_course)
+
         self.lblExp.grid(row = 1, column = 1, columnspan = 4, sticky = tk.NE + tk.SW)
         self.lblName.grid(row = 0, column = 0, columnspan = 2, sticky = tk.NE + tk.SW)
         self.leftFrame.grid(row = 2, rowspan = 4, column = 0, columnspan = 3, sticky = tk.NE + tk.SW)
         self.sb1.pack(side="right", fill="y")
+        self.unchosenCourse.pack(side="left")
+
+        self.rightFrame.grid(row = 2, rowspan = 4, column = 2, columnspan = 3, sticky = tk.NE + tk.SW)
+        self.sb2.pack(side="right", fill="y")
+        self.chosenCourse.pack(side="left")
 
 class MainWindow(tk.Frame):
     
