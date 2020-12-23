@@ -6,8 +6,6 @@ SCHOOL_YEAR = 109
 
 def credit_no_credit(finished, required_subjects):
     # 回傳已經修了多少學分、剩餘必修學分、尚未完成必修
-    # print(finished)
-    # print(required_subjects)
     credit = 0
     notfinished = []
     no_credit = 0
@@ -323,16 +321,13 @@ class MainWindow(tk.Frame):
             if line[0] == self.department and line[1] == self.year:
                 print("已替您載入%s系 %s學年度必修與選修資料庫" %(self.department, self.year))
             required = file.readline().split()
-            required_credit = required[1]
             required_subjects = []
             
             while(True):
                 a = file.readline().split()
                 if a[0] == "系定選修":
-                    elective_credit = a[1]
                     break
                 required_subjects.append(a)
-            # print(required_subjects)
         self.required_subjects = required_subjects
 
         # 建立已完成課程名單
@@ -349,7 +344,6 @@ class MainWindow(tk.Frame):
 
         # 計算已修的必修課程學分數、剩餘必修學分、未完成必修課
         self.credit, self.no_credit, self.not_finished, self.pastCourse = credit_no_credit(finished, required_subjects)
-        print(self.credit, self.no_credit, self.not_finished, self.pastCourse)
 
 appUser = ""
 root = tk.Tk()
