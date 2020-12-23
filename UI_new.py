@@ -189,14 +189,30 @@ class MainWindow(tk.Frame):
     def left_confirm(self):
         self.cancel()
         courseName = self.unchosenCourse.get(self.unchosenCourse.curselection())
-        self.unchosenCourse.delete(self.unchosenCourse.curselection())
-        self.chosenCourse.insert("end", courseName)
+        for i in range(len(self.required_subjects)):
+            if self.required_subjects[i][0] == courseName:
+                if(self.gradeDisplay == int(int(self.required_subjects[i][2]) / 10) and
+                   self.semesterDisplay == int(int(self.required_subjects[i][2]) % 10)):
+                    a = self.required_subjects[i][3].split(",")
+                    for j in range(int(len(a) / 2)):
+                        for k in range(int(a[j * 2 + 1])):
+                            self.curriculum[int(a[j * 2]) + k].config(text="%s"%self.required_subjects[i][0])
+                    self.unchosenCourse.delete(self.unchosenCourse.curselection())
+                    self.chosenCourse.insert("end", courseName)
     
     def right_confirm(self):
         self.cancel()
         courseName = self.chosenCourse.get(self.chosenCourse.curselection())
-        self.chosenCourse.delete(self.chosenCourse.curselection())
-        self.unchosenCourse.insert("end", courseName)
+        for i in range(len(self.required_subjects)):
+            if self.required_subjects[i][0] == courseName:
+                if(self.gradeDisplay == int(int(self.required_subjects[i][2]) / 10) and
+                   self.semesterDisplay == int(int(self.required_subjects[i][2]) % 10)):
+                    a = self.required_subjects[i][3].split(",")
+                    for j in range(int(len(a) / 2)):
+                        for k in range(int(a[j * 2 + 1])):
+                            self.curriculum[int(a[j * 2]) + k].config(text="")
+                    self.chosenCourse.delete(self.chosenCourse.curselection())
+                    self.unchosenCourse.insert("end", courseName)
     
     def createWindow(self):
         
