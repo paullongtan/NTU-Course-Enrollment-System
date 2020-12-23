@@ -4,8 +4,35 @@ from tkinter import messagebox
 from tkinter import ttk
 SCHOOL_YEAR = 109
 
-def credit_no_credit(finished, required_subjects):
+def credit_no_credit(user):
     # 回傳已經修了多少學分、剩餘必修學分、尚未完成必修
+    with open(file="%s.txt" %user, mode="r", encoding="utf-8") as file:
+        line = file.readline().rstrip("\n").split(",")
+        department = line[0]
+        year = line[1]
+
+    with open(file="%s%s.txt" %(department, year), mode="r", encoding="utf-8") as file:
+        line = file.readline().rstrip("\n").split()
+        if line[0] == department and line[1] == year:
+            print("已替您載入%s系 %s學年度必修與選修資料庫" %(department, year))
+
+        required_subjects = []
+        while(True):
+            a = file.readline().split()
+            if a[0] == "系定選修":
+                break
+            required_subjects.append(a)
+
+        # 建立已完成課程名單
+        finished = dict()
+        for i in range(len(required_subjects)):
+            finished[required_subjects[i][0]] = 0
+
+        with open(file="%s.txt" %user, mode="r", encoding="utf-8") as file:
+            line = file.readline().rstrip("\n").split(",")
+            for line in file:
+                line = line.strip("\n")
+                finished[line] = 1
     credit = 0
     notfinished = []
     no_credit = 0
@@ -17,7 +44,7 @@ def credit_no_credit(finished, required_subjects):
         else:
             notfinished.append(required_subjects[i][0])
             no_credit += int(required_subjects[i][1])
-    return credit, no_credit, notfinished, pastCourse
+    return credit, no_credit, notfinished, pastCourse, required_subjects
 
 class LoginWindow(tk.Frame):
 
@@ -68,9 +95,6 @@ class LoginWindow(tk.Frame):
             self.signUpWin = tk.Toplevel(self)
             self.signUp = SignUpWindow(self.signUpWin, user)
 
-        
-    def openMain(self):
-        self.newWindow = tk.Toplevel()
     
 class SignUpWindow(tk.Frame):
 
@@ -108,6 +132,7 @@ class SignUpWindow(tk.Frame):
         self.master = name
         department = self.comboDpt.get()
         year = self.comboYear.get()
+        self.year = year
         print(name, department, year)
         with open(file="name.txt", mode="a", encoding="utf-8") as file:
             file.write(name + "\n")
@@ -117,8 +142,42 @@ class SignUpWindow(tk.Frame):
         tk.messagebox.showinfo('註冊','已替您建立您的帳戶')
         root.destroy()
 
-class MainWindow(tk.Frame):
+class RecordWindow(tk.Frame):
 
+    def __init__(self, master, user):
+        self.master = master
+        self.user = user
+        tk.Frame.__init__(self)
+        self.grid()
+        self.createWindow()
+
+    def createWindow(self):
+        f1 = tkFont.Font(size = 16, family = "jf open 粉圓 1.1")
+        f2 = tkFont.Font(size = 16, family = "標楷體")
+
+        self.credit, self.no_credit, self.not_finished, self.pastCourse, self.required_subjects = credit_no_credit(self.user)
+
+        self.lblName = tk.Label(self, text = "%s的修課紀錄" %self.user, height = 1, width = 10, font = f1)
+        self.lblExp = tk.Label(self, text = "來初始化你過去已修的課程ㄅ", height = 1, width = 40, font = f2)
+
+        self.leftFrame = tk.LabelFrame(text="經濟系課程列表", font="標楷體 16")
+        self.leftFrame.config(highlightbackground="#888888", highlightthickness=3)
+        self.sb1 = tk.Scrollbar(self.leftFrame)
+        
+        self.unchosenCourse = tk.Listbox(self.leftFrame, width=20, height=24, yscrollcommand=self.sb1.set)
+        self.unchosenCourse.pack(side="left")
+        self.sb1.config(command=self.unchosenCourse.yview)
+        for i in self.not_finished:
+            self.unchosenCourse.insert("end", i)
+        self.unchosenCourse.bind("<ButtonRelease-1>")
+
+        self.lblExp.grid(row = 1, column = 1, columnspan = 4, sticky = tk.NE + tk.SW)
+        self.lblName.grid(row = 0, column = 0, columnspan = 2, sticky = tk.NE + tk.SW)
+        self.leftFrame.grid(row = 2, rowspan = 4, column = 0, columnspan = 3, sticky = tk.NE + tk.SW)
+        self.sb1.pack(side="right", fill="y")
+
+class MainWindow(tk.Frame):
+    
     def __init__(self, master, user):
         self.master = master
         self.user = user
@@ -310,35 +369,8 @@ class MainWindow(tk.Frame):
         self.semesterTrans = {1:"上", 2:"下"}
         self.gradeTrans = {1:"大一", 2:"大二", 3:"大三", 4:"大四"}
         
-        # 載入該系必修、選修資料庫
-        with open(file="%s%s.txt" %(self.department, self.year), mode="r", encoding="utf-8") as file:
-            line = file.readline().rstrip("\n").split()
-            if line[0] == self.department and line[1] == self.year:
-                print("已替您載入%s系 %s學年度必修與選修資料庫" %(self.department, self.year))
-            required = file.readline().split()
-            required_subjects = []
-            
-            while(True):
-                a = file.readline().split()
-                if a[0] == "系定選修":
-                    break
-                required_subjects.append(a)
-        self.required_subjects = required_subjects
-
-        # 建立已完成課程名單
-        finished = dict()
-        for i in range(len(required_subjects)):
-            finished[required_subjects[i][0]] = 0
-
-        with open(file="%s.txt" %self.user, mode="r", encoding="utf-8") as file:
-            line = file.readline().rstrip("\n").split(",")
-            print("您是%s系%s年入學的，已替您載入你專屬的修課紀錄" %(self.department, self.year))
-            for line in file:
-                line = line.strip("\n")
-                finished[line] = 1
-
         # 計算已修的必修課程學分數、剩餘必修學分、未完成必修課
-        self.credit, self.no_credit, self.not_finished, self.pastCourse = credit_no_credit(finished, required_subjects)
+        self.credit, self.no_credit, self.not_finished, self.pastCourse, self.required_subjects = credit_no_credit(self.user)
 
 appUser = ""
 root = tk.Tk()
@@ -350,10 +382,22 @@ app.mainloop()
 print(type(app.master))
 
 if app.newUser == True:
-    win = tk.Tk()
-    win.geometry("1400x780+60+10")
-    main = MainWindow(win, app.signUp.user)
-    win.title("Course Selection Supporting System")
+    if app.signUp.year == SCHOOL_YEAR:
+        win = tk.Tk()
+        win.geometry("1400x780+60+10")
+        main = MainWindow(win, app.signUp.user)
+        win.title("Course Selection Supporting System")
+    else:
+        branch = tk.Tk()
+        branch.geometry('+500+400')  
+        record = RecordWindow(branch, app.user)
+        record.master.title("台大修課檢驗系統")
+        record.mainloop()
+
+        win = tk.Tk()
+        win.geometry("1400x780+60+10")
+        main = MainWindow(win, app.signUp.user)
+        win.title("Course Selection Supporting System")
 else:
     win = tk.Tk()
     win.geometry("1400x780+60+10")
