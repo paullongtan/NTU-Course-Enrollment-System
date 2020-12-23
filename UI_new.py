@@ -15,11 +15,13 @@ def credit_no_credit(user):
         line = file.readline().rstrip("\n").split()
         if line[0] == department and line[1] == year:
             print("已替您載入%s系 %s學年度必修與選修資料庫" %(department, year))
-
+        
         file.readline()
         required_subjects = []
         while(True):
             a = file.readline().split()
+            if a[0] == "系定必修":
+                continue
             if a[0] == "系定選修":
                 break
             required_subjects.append(a)
@@ -28,24 +30,29 @@ def credit_no_credit(user):
         finished = dict()
         for i in range(len(required_subjects)):
             finished[required_subjects[i][0]] = 0
+        
 
         with open(file="%s.txt" %user, mode="r", encoding="utf-8") as file:
             line = file.readline().rstrip("\n").split(",")
             for line in file:
                 line = line.strip("\n")
-                finished[line] = 1
+                line = line.split()
+                finished[line[0]] = "1%s"%line[1]
+
     credit = 0
     notfinished = []
     no_credit = 0
     pastCourse = []
+    pastTime = []
     for i in range(len(required_subjects)):
-        if finished[required_subjects[i][0]] == 1:
+        if int(finished[required_subjects[i][0]]) >= 100:
             credit += int(required_subjects[i][1])
             pastCourse.append(required_subjects[i][0])
+            pastTime.append(int(finished[required_subjects[i][0]]) - 100)
         else:
             notfinished.append(required_subjects[i][0])
             no_credit += int(required_subjects[i][1])
-    return credit, no_credit, notfinished, pastCourse, required_subjects
+    return credit, no_credit, notfinished, pastCourse, required_subjects, pastTime
 
 class LoginWindow(tk.Frame):
 
@@ -156,7 +163,7 @@ class RecordWindow(tk.Frame):
         f1 = tkFont.Font(size = 16, family = "jf open 粉圓 1.1")
         f2 = tkFont.Font(size = 16, family = "標楷體")
 
-        self.credit, self.no_credit, self.not_finished, self.pastCourse, self.required_subjects = credit_no_credit(self.user)
+        self.credit, self.no_credit, self.not_finished, self.pastCourse, self.required_subjects, self.pastTime = credit_no_credit(self.user)
 
         self.lblName = tk.Label(self, text = "%s的修課紀錄" %self.user, height = 1, width = 10, font = f1)
         self.lblExp = tk.Label(self, text = "來初始化你過去已修的課程ㄅ", height = 1, width = 40, font = f2)
@@ -209,8 +216,8 @@ class MainWindow(tk.Frame):
         for i in range(len(self.pastCourse)):
             for j in range(len(self.required_subjects)):
                 if(self.required_subjects[j][0] == self.pastCourse[i] and
-                   int(int(self.required_subjects[j][2]) / 10) == self.gradeDisplay and
-                   int(int(self.required_subjects[j][2]) % 10) == self.semesterDisplay):
+                   int(int(self.pastTime[i]) / 10) == self.gradeDisplay and
+                   int(int(self.pastTime[i]) % 10) == self.semesterDisplay):
                     a = self.required_subjects[j][3].split(",")
                     for k in range(int(len(a) / 2)):
                         for m in range(int(a[k * 2 + 1])):
@@ -252,14 +259,26 @@ class MainWindow(tk.Frame):
             courseName = self.unchosenCourse.get(self.unchosenCourse.curselection())
         else:
             courseName = self.chosenCourse.get(self.chosenCourse.curselection())
+        timeFree = "green"
         for i in range(len(self.required_subjects)):
             if self.required_subjects[i][0] == courseName:
-                if(self.gradeDisplay == int(int(self.required_subjects[i][2]) / 10) and
-                   self.semesterDisplay == int(int(self.required_subjects[i][2]) % 10)):
-                    a = self.required_subjects[i][3].split(",")
+                a = self.required_subjects[i][3].split(",")
+                for j in range(len(self.pastTime)):
+                    if(self.pastCourse[j] == courseName and
+                       self.gradeDisplay == int(int(self.pastTime[j]) / 10) and
+                       self.semesterDisplay == int(int(self.pastTime[j]) % 10)):
+                        timeFree = "yellow"
+                        continue
+                if timeFree != "yellow":
                     for j in range(int(len(a) / 2)):
                         for k in range(int(a[j * 2 + 1])):
-                            self.curriculum[int(a[j * 2]) + k].config(bg="red")
+                            if(self.curriculum[int(a[j * 2]) + k].cget("text") != ""):
+                                timeFree = "red"
+                                break
+                for j in range(int(len(a) / 2)):
+                    for k in range(int(a[j * 2 + 1])):
+                        self.curriculum[int(a[j * 2]) + k].config(bg=timeFree)
+                break
     
     def cancel(self):
         for i in range(17, 112):
@@ -272,48 +291,58 @@ class MainWindow(tk.Frame):
             courseName = self.unchosenCourse.get(self.unchosenCourse.curselection())
             for i in range(len(self.required_subjects)):
                 if self.required_subjects[i][0] == courseName:
-                    if(self.gradeDisplay == int(int(self.required_subjects[i][2]) / 10) and
-                       self.semesterDisplay == int(int(self.required_subjects[i][2]) % 10)):
-                        a = self.required_subjects[i][3].split(",")
+                    # if(self.gradeDisplay == int(int(self.required_subjects[i][2]) / 10) and
+                       # self.semesterDisplay == int(int(self.required_subjects[i][2]) % 10)):
+                    a = self.required_subjects[i][3].split(",")
+                    for j in range(int(len(a) / 2)):
+                        for k in range(int(a[j * 2 + 1])):
+                            if self.curriculum[int(a[j * 2]) + k].cget("text") != "":
+                                timeFree = False
+                    if timeFree == True:
                         for j in range(int(len(a) / 2)):
                             for k in range(int(a[j * 2 + 1])):
-                                if self.curriculum[int(a[j * 2]) + k].cget("text") != "":
-                                    timeFree = False
-                        if timeFree == True:
-                            for j in range(int(len(a) / 2)):
-                                for k in range(int(a[j * 2 + 1])):
-                                    self.curriculum[int(a[j * 2]) + k].config(text="%s"%self.required_subjects[i][0])
-                            self.cancel()
-                            self.unchosenCourse.delete(self.unchosenCourse.curselection())
-                            self.chosenCourse.insert("end", courseName)
-                            self.pastCourse.append(courseName)
-                            self.credit += int(self.required_subjects[i][1])
-                            self.creditEarned.config(text="● 已修習學分數：%s" %self.credit)
-                            self.no_credit -= int(self.required_subjects[i][1])
-                            self.creditLack.config(text="● 尚需學分數： %s" %self.no_credit)
+                                self.curriculum[int(a[j * 2]) + k].config(text="%s"%self.required_subjects[i][0])
+                        self.cancel()
+                        self.unchosenCourse.delete(self.unchosenCourse.curselection())
+                        self.not_finished.remove(courseName)
+                        self.chosenCourse.insert("end", courseName)
+                        self.pastCourse.append(courseName)
+                        self.pastTime.append(self.gradeDisplay * 10 + self.semesterDisplay)
+                        self.credit += int(self.required_subjects[i][1])
+                        self.creditEarned.config(text="● 已修習學分數：%s" %self.credit)
+                        self.no_credit -= int(self.required_subjects[i][1])
+                        self.creditLack.config(text="● 尚需學分數： %s" %self.no_credit)
+                    break
     
     def drop_course(self):
         if self.chosenCourse.curselection() != ():
-            self.cancel()
             courseName = self.chosenCourse.get(self.chosenCourse.curselection())
-            for i in range(len(self.required_subjects)):
-                if self.required_subjects[i][0] == courseName:
-                    if(self.gradeDisplay == int(int(self.required_subjects[i][2]) / 10) and
-                       self.semesterDisplay == int(int(self.required_subjects[i][2]) % 10)):
-                        a = self.required_subjects[i][3].split(",")
+            for i in range(len(self.pastCourse)):
+                if self.pastCourse[i] == courseName:
+                    if(self.gradeDisplay == int(int(self.pastTime[i]) / 10) and
+                       self.semesterDisplay == int(int(self.pastTime[i]) % 10)):
+                        for j in range(len(self.required_subjects)):
+                            if self.required_subjects[j][0] == courseName:
+                                a = self.required_subjects[i][3].split(",")
+                                break
                         for j in range(int(len(a) / 2)):
                             for k in range(int(a[j * 2 + 1])):
                                 self.curriculum[int(a[j * 2]) + k].config(text="")
                         self.chosenCourse.delete(self.chosenCourse.curselection())
                         self.unchosenCourse.insert("end", courseName)
+                        self.not_finished.append(courseName)
                         for j in range(len(self.pastCourse)):
                             if self.pastCourse[j] == courseName:
                                 self.pastCourse.pop(j)
+                                self.pastTime.pop(j)
                                 break
                         self.credit -= int(self.required_subjects[i][1])
                         self.creditEarned.config(text="● 已修習學分數：%s" %self.credit)
                         self.no_credit += int(self.required_subjects[i][1])
                         self.creditLack.config(text="● 尚需學分數： %s" %self.no_credit)
+                        self.cancel()
+                        self.courseShow()
+                    break
                     
     
     def createWindow(self):
@@ -395,11 +424,8 @@ class MainWindow(tk.Frame):
         self.chosenCourse = tk.Listbox(self.rightFrame, width=20, height=24, yscrollcommand=self.sb2.set)
         self.chosenCourse.pack(side="left")
         self.sb2.config(command=self.chosenCourse.yview)
-        for i in range(len(self.required_subjects)):
-            for j in range(len(self.pastCourse)):
-                if self.required_subjects[i][0] == self.pastCourse[j]:
-                    self.chosenCourse.insert("end", self.pastCourse[j])
-                    break
+        for i in range(len(self.pastCourse)):
+            self.chosenCourse.insert("end", self.pastCourse[i])
         self.chosenCourse.bind("<ButtonRelease-1>", self.high_light_course)
         
         self.rightCancelBtn = tk.Button(text="取消", height=1, width=8, command=self.cancel)
@@ -420,7 +446,7 @@ class MainWindow(tk.Frame):
         self.gradeTrans = {1:"大一", 2:"大二", 3:"大三", 4:"大四"}
         
         # 計算已修的必修課程學分數、剩餘必修學分、未完成必修課
-        self.credit, self.no_credit, self.not_finished, self.pastCourse, self.required_subjects = credit_no_credit(self.user)
+        self.credit, self.no_credit, self.not_finished, self.pastCourse, self.required_subjects, self.pastTime = credit_no_credit(self.user)
 
 appUser = ""
 root = tk.Tk()
