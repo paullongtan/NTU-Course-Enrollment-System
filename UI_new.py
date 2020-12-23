@@ -439,7 +439,7 @@ if app.newUser == True:
         win.title("Course Selection Supporting System")
     else:
         branch = tk.Tk()
-        branch.geometry('+500+400')  
+        branch.geometry('+300+300')  
         record = RecordWindow(branch, app.user)
         record.master.title("台大修課檢驗系統")
         record.mainloop()
