@@ -356,6 +356,4 @@ else:
     win.title("Course Selection Supporting System")
 
 
-
-
 win.mainloop()
