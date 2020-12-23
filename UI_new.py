@@ -358,12 +358,8 @@ class MainWindow(tk.Frame):
         self.unchosenCourse = tk.Listbox(self.leftFrame, width=20, height=24, yscrollcommand=self.sb1.set)
         self.unchosenCourse.pack(side="left")
         self.sb1.config(command=self.unchosenCourse.yview)
-        for i in range(len(self.required_subjects)):
-            for j in range(len(self.pastCourse)):
-                if self.required_subjects[i][0] == self.pastCourse[j]:
-                    break
-                elif j == len(self.pastCourse) - 1:
-                    self.unchosenCourse.insert("end", self.required_subjects[i][0])
+        for i in self.not_finished:
+                    self.unchosenCourse.insert("end", i)
         self.unchosenCourse.bind("<ButtonRelease-1>", self.high_light_course)
         
         self.leftCancelBtn = tk.Button(text="取消", height=1, width=8, command=self.cancel)
