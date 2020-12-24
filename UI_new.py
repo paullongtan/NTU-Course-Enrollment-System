@@ -207,6 +207,7 @@ class MainWindow(tk.Frame):
     def __init__(self, master, user):
         self.master = master
         self.user = user
+        tk.Frame.__init__(self)
         self.createWindow()
     
     def courseShow(self):
@@ -398,6 +399,11 @@ class MainWindow(tk.Frame):
     
     def error_message_postcourse(self, postCourse):
         tk.messagebox.showwarning("Error!", "請先退選被擋修課程：%s"%postCourse)
+
+    
+    def addSelfCourse(self):
+        self.selfCourseWin = tk.Toplevel(self)
+        self.selfCourse = SelfCourseWindow(self.selfCourseWin)
     
     def end_system(self):
         with open(file="%s.txt" %self.user, mode="w", encoding="utf-8") as file:
@@ -405,9 +411,13 @@ class MainWindow(tk.Frame):
             for i in range(len(self.pastCourse)):
                 file.write(self.pastCourse[i] + " " + str(self.pastTime[i]) + "\n")
         win.destroy()
-        
+
+
     
     def createWindow(self):
+
+        f1 = tkFont.Font(size = 16, family = "jf open 粉圓 1.1")
+        f3 = tkFont.Font(size = 16, family = "標楷體")
         
         self.courseData()
         self.userData = tk.LabelFrame(text="PERSONAL DATA", font="TimesNewRoman 16 bold")
@@ -495,10 +505,13 @@ class MainWindow(tk.Frame):
         self.rightCancelBtn.place(x=391, y=710)
         self.rightConfirmBtn = tk.Button(text="退選", height=1, width=8, command=self.drop_course)
         self.rightConfirmBtn.place(x=307, y=710)
+
+        self.selfCourseBtn = tk.Button(text="加入個人課程", height=2, width=10, font=f1, command=self.addSelfCourse)
+        self.selfCourseBtn.place(x=50, y=220)
         
         self.endBtn = tk.Button(text="結束並存檔", pady=2, padx=2, command=self.end_system)
         self.endBtn.place(x=1250, y=725)
-        
+    
     def courseData(self):
 
         with open(file="%s.txt" %self.user, mode="r", encoding="utf-8") as file:
@@ -514,6 +527,51 @@ class MainWindow(tk.Frame):
         # 計算已修的必修課程學分數、剩餘必修學分、未完成必修課
         self.credit, self.no_credit, self.not_finished, self.pastCourse, self.required_subjects, self.pastTime = credit_no_credit(self.user)
 
+    
+class SelfCourseWindow(tk.Frame):
+
+    def __init__(self, master):
+        self.master = master
+        self.master.geometry('+500+300')
+        self.createWindow()
+
+    def createWindow(self):
+        f3 = tkFont.Font(size = 16, family = "標楷體")
+
+        self.lblSelfExp = tk.Label(self.master, text = "來加入你自己的專屬課程！", height = 1, width = 40, font = f3)
+        self.lblCourseName = tk.Label(self.master, text = "課程名:", height = 1, width = 6, font = f3)
+        self.txtCourseName = tk.Text(self.master, height = 1, width = 8, font = f3)
+        self.lblCourseType = tk.Label(self.master, text = "課程類型:", height = 1, width = 6, font = f3)
+        self.comboType = ttk.Combobox(self.master, values = ["系定選修", "一般選修", "共同必修", "體育", "其他"], height = 3, width = 8, font = f3)
+        self.lblCredit = tk.Label(self.master, text = "學分數:", height = 1, width = 6, font = f3)
+        self.comboCredit = ttk.Combobox(self.master, values = ["0", "1", "2", "3", "4", "5"], height = 5, width = 8, font = f3)
+        self.lblCourseTime = tk.Label(self.master, text = "課程時間:", height = 1, width = 6, font = f3)
+        self.comboWeekday = ttk.Combobox(self.master, values = ["週一", "週二", "週三", "週四", "週五"], height = 5, width = 5, font = f3)
+        self.comboPeriod = ttk.Combobox(self.master, values = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D"], height = 8, width = 5, font = f3)
+        self.btnAddTime = tk.Button(self.master, text = "加入時段", height = 1, width = 6, font = f3)
+        self.btnApply = tk.Button(self.master, text = "加入課程", height = 1, width = 6, font = f3)
+        self.cvsMain = tk.Canvas(self.master, width = 300, height = 300, bg = "white")
+
+        self.lblSelfExp.grid(row = 0, column = 0, columnspan = 4, sticky = tk.NE + tk.SW)
+        self.lblCourseName.grid(row = 1, column = 1, sticky = tk.NE + tk.SW)
+        self.txtCourseName.grid(row = 1, column = 2, sticky = tk.NE + tk.SW)
+        self.lblCourseType.grid(row = 2, column = 1, sticky = tk.NE + tk.SW)
+        self.comboType.grid(row = 2, column = 2, sticky = tk.NE + tk.SW)
+        self.lblCredit.grid(row = 3, column = 1, sticky = tk.NE + tk.SW)
+        self.comboCredit.grid(row = 3, column = 2, sticky = tk.NE + tk.SW)
+        self.lblCourseTime.grid(row = 4, column = 1, sticky = tk.NE + tk.SW)
+        self.comboWeekday.grid(row = 4, column = 2, sticky = tk.NE + tk.SW)
+        self.comboPeriod.grid(row = 5, column = 2, sticky = tk.NE + tk.SW)
+        self.btnAddTime.grid(row = 6, column = 2, sticky = tk.NE + tk.SW)
+        self.btnApply.grid(row = 7, column = 1, columnspan = 2, sticky = tk.NE + tk.SW)
+        self.cvsMain.grid(row = 8, column = 0, columnspan = 3, sticky = tk.NE + tk.SW)
+    
+    # def AddTime(self):
+    #     self.cvsMain.create_text(100,10,fill="darkblue",font="Times 20 italic bold", text="Click the bubbles that are multiples of two.")
+
+        
+    
+
 appUser = ""
 root = tk.Tk()
 root.geometry('+500+400')  
@@ -523,28 +581,10 @@ app.mainloop()
 
 print(type(app.master))
 
-if app.newUser == True:
-    if app.signUp.year == SCHOOL_YEAR:
-        win = tk.Tk()
-        win.geometry("1400x780+60+10")
-        main = MainWindow(win, app.signUp.user)
-        win.title("Course Selection Supporting System")
-    else:
-        branch = tk.Tk()
-        branch.geometry('+300+300')  
-        record = RecordWindow(branch, app.user)
-        record.master.title("台大修課檢驗系統")
-        record.mainloop()
-
-        win = tk.Tk()
-        win.geometry("1400x780+60+10")
-        main = MainWindow(win, app.signUp.user)
-        win.title("Course Selection Supporting System")
-else:
-    win = tk.Tk()
-    win.geometry("1400x780+60+10")
-    main = MainWindow(win, app.user)
-    win.title("Course Selection Supporting System")
+win = tk.Tk()
+win.geometry("1400x780+60+10")
+main = MainWindow(win, app.user)
+win.title("Course Selection Supporting System")
 
 
 win.mainloop()
