@@ -262,23 +262,25 @@ class MainWindow(tk.Frame):
         timeFree = "green"
         for i in range(len(self.required_subjects)):
             if self.required_subjects[i][0] == courseName:
-                a = self.required_subjects[i][3].split(",")
-                for j in range(len(self.pastTime)):
-                    if(self.pastCourse[j] == courseName and
-                       self.gradeDisplay == int(int(self.pastTime[j]) / 10) and
-                       self.semesterDisplay == int(int(self.pastTime[j]) % 10)):
-                        timeFree = "yellow"
-                        continue
-                if timeFree != "yellow":
+                if (self.semesterDisplay == int(int(self.required_subjects[i][2]) % 10) and
+                    (self.gradeDisplay >= int(int(self.required_subjects[i][2]) / 10))):
+                    a = self.required_subjects[i][3].split(",")
+                    for j in range(len(self.pastTime)):
+                        if(self.pastCourse[j] == courseName and
+                           self.gradeDisplay == int(int(self.pastTime[j]) / 10) and
+                           self.semesterDisplay == int(int(self.pastTime[j]) % 10)):
+                            timeFree = "yellow"
+                            continue
+                    if timeFree != "yellow":
+                        for j in range(int(len(a) / 2)):
+                            for k in range(int(a[j * 2 + 1])):
+                                if(self.curriculum[int(a[j * 2]) + k].cget("text") != ""):
+                                    timeFree = "red"
+                                    break
                     for j in range(int(len(a) / 2)):
                         for k in range(int(a[j * 2 + 1])):
-                            if(self.curriculum[int(a[j * 2]) + k].cget("text") != ""):
-                                timeFree = "red"
-                                break
-                for j in range(int(len(a) / 2)):
-                    for k in range(int(a[j * 2 + 1])):
-                        self.curriculum[int(a[j * 2]) + k].config(bg=timeFree)
-                break
+                            self.curriculum[int(a[j * 2]) + k].config(bg=timeFree)
+                    break
     
     def cancel(self):
         for i in range(17, 112):
@@ -290,15 +292,25 @@ class MainWindow(tk.Frame):
             timeFree = True
             courseName = self.unchosenCourse.get(self.unchosenCourse.curselection())
             for i in range(len(self.required_subjects)):
-                if self.required_subjects[i][0] == courseName:
-                    # if(self.gradeDisplay == int(int(self.required_subjects[i][2]) / 10) and
-                       # self.semesterDisplay == int(int(self.required_subjects[i][2]) % 10)):
+                if self.required_subjects[i][0] == courseName and self.semesterDisplay == int(int(self.required_subjects[i][2]) % 10):
                     a = self.required_subjects[i][3].split(",")
                     for j in range(int(len(a) / 2)):
                         for k in range(int(a[j * 2 + 1])):
                             if self.curriculum[int(a[j * 2]) + k].cget("text") != "":
                                 timeFree = False
-                    if timeFree == True:
+                    
+                    conditionFit = ((self.semesterDisplay == int(int(self.required_subjects[i][2]) % 10)) and
+                                    (self.gradeDisplay >= int(int(self.required_subjects[i][2]) / 10)))
+                    b = self.required_subjects[i][4].split(",")
+                    if conditionFit == True and b[0] != "無":
+                        for j in range(len(b)):
+                            for k in range(len(self.pastCourse)):
+                                if self.pastCourse[k] == b[j]:
+                                    break
+                                elif k == len(self.pastCourse) - 1:
+                                    conditionFit = False
+                    
+                    if timeFree == True and conditionFit == True:
                         for j in range(int(len(a) / 2)):
                             for k in range(int(a[j * 2 + 1])):
                                 self.curriculum[int(a[j * 2]) + k].config(text="%s"%self.required_subjects[i][0])
