@@ -25,6 +25,12 @@ def credit_no_credit(user):
             if a[0] == "系定選修":
                 break
             required_subjects.append(a)
+        
+        with open(file="%sSelfCourse.txt" %user, mode="r", encoding="utf-8") as file:
+            line = file.readline().strip("\n").split(" ")
+            while line != [""]:
+                required_subjects.append(line)
+                line = file.readline().strip("\n").split(" ")
 
         # 建立已完成課程名單
         finished = dict()
@@ -52,6 +58,7 @@ def credit_no_credit(user):
         else:
             notfinished.append(required_subjects[i][0])
             no_credit += int(required_subjects[i][1])
+    
     return credit, no_credit, notfinished, pastCourse, required_subjects, pastTime
 
 class LoginWindow(tk.Frame):
@@ -362,7 +369,6 @@ class MainWindow(tk.Frame):
                 file.write(self.pastCourse[i] + " " + str(self.pastTime[i]) + "\n")
         win.destroy()
 
-    
     def createWindow(self):
 
         f1 = tkFont.Font(size = 16, family = "jf open 粉圓 1.1")
@@ -530,52 +536,72 @@ class SelfCourseWindow(tk.Frame):
         else:
             self.lblTime.configure(text = self.lblTime.cget("text") + "," + weekday + " " + period)
     
+    def self_to_not_finished(self):
+        mainWindow = MainWindow(self.master, self.user)
+        with open(file="%sSelfCourse.txt" %self.user, mode="r", encoding="utf-8") as file:
+            line = file.readline().strip("\n").split(" ")
+            while line != [""]:
+                conditionFit = True
+                for i in range(len(mainWindow.required_subjects)):
+                    if line[0] == mainWindow.required_subjects[i][0]:
+                        conditionFit = False
+                        break
+                if conditionFit == True:
+                    mainWindow.not_finished.append(line[0])
+                    mainWindow.unchosenCourse.insert("end", line[0])
+                    mainWindow.required_subjects.append(line)
+                line = file.readline().strip("\n").split(" ")
+    
     def addSelfCourse(self):
-        toDay = {"週一":1, "週二":2, "週三":3, "週四":4, "週五":5}
-        course = self.txtCourseName.get("1.0", "end-1c")
-        courseType = self.comboType.get()
-        courseCredit = self.comboCredit.get()
-        semester = self.comboSemester.get()
-        courseTime = self.lblTime.cget("text")
-        time = courseTime.split(",")
-        if len(self.lblCourse.cget("text")) == 0:
-            self.lblCourse.configure(text = course)
-        else:
-            self.lblCourse.configure(text = self.lblCourse.cget("text") + "\n" + course)
-        self.lblTime.configure(text = "")
+        if(self.txtCourseName.get("1.0", "end-1c") != "" and self.comboType.get() != "" and
+           self.comboCredit.get() != "" and self.comboSemester.get() != "" and
+           self.lblTime.cget("text") != ""):
+            toDay = {"週一":1, "週二":2, "週三":3, "週四":4, "週五":5}
+            course = self.txtCourseName.get("1.0", "end-1c")
+            courseType = self.comboType.get()
+            courseCredit = self.comboCredit.get()
+            semester = self.comboSemester.get()
+            courseTime = self.lblTime.cget("text")
+            time = courseTime.split(",")
+            if len(self.lblCourse.cget("text")) == 0:
+                self.lblCourse.configure(text = course)
+            else:
+                self.lblCourse.configure(text = self.lblCourse.cget("text") + "\n" + course)
+            self.lblTime.configure(text = "")
 
-        try:
-            with open(file="%sSelfCourse.txt" %self.user, mode="a", encoding="utf-8") as file:
-                file.write(course + " " + courseCredit + " ")
-                period = []
-                temp = ""
-                for i in time:
-                    a = i.split(" ")
-                    temp += str(toDay[a[0]] * 16 + int(a[1]) + 1) + "," + "1" + " "
-                temp = temp[0:-1]
+            try:
+                with open(file="%sSelfCourse.txt" %self.user, mode="a", encoding="utf-8") as file:
+                    file.write(course + " " + courseCredit + " ")
+                    period = []
+                    temp = ""
+                    for i in time:
+                        a = i.split(" ")
+                        temp += str(toDay[a[0]] * 16 + int(a[1]) + 1) + "," + "1" + ","
+                    temp = temp[0:-1]
 
-                if semester == "上學期":
-                    file.write("11" + " " + temp + " 無 無")
-                else:
-                    file.write("12" + " " + temp + " 無 無")
-        except:
-            with open(file="%sSelfCourse.txt" %self.user, mode="w", encoding="utf-8") as file:
-                file.write(course + " " + courseCredit + " ")
-                period = []
-                temp = ""
-                for i in time:
-                    a = i.split(" ")
-                    temp += str(toDay[a[0]] * 16 + int(a[1]) + 1) + "," + "1" + " "
-                temp = temp[0:-1]
+                    if semester == "上學期":
+                        file.write("11" + " " + temp + " 無 無" + "\n")
+                    else:
+                        file.write("12" + " " + temp + " 無 無" + "\n")
+            except:
+                with open(file="%sSelfCourse.txt" %self.user, mode="w", encoding="utf-8") as file:
+                    file.write(course + " " + courseCredit + " ")
+                    period = []
+                    temp = ""
+                    for i in time:
+                        a = i.split(" ")
+                        temp += str(toDay[a[0]] * 16 + int(a[1]) + 1) + "," + "1" + " "
+                    temp = temp[0:-1]
 
-                if semester == "上學期":
-                    file.write("11" + " " + temp + " 無 無")
-                else:
-                    file.write("12" + " " + temp + " 無 無")
+                    if semester == "上學期":
+                        file.write("11" + " " + temp + " 無 無")
+                    else:
+                        file.write("12" + " " + temp + " 無 無")
+            self.self_to_not_finished()
     
     def finishRecording(self):
         self.master.destroy()
-
+            
 appUser = ""
 root = tk.Tk()
 root.geometry('+500+400')  
