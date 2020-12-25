@@ -403,7 +403,10 @@ class MainWindow(tk.Frame):
     
     def addSelfCourse(self):
         self.selfCourseWin = tk.Toplevel(self)
-        self.selfCourse = SelfCourseWindow(self.selfCourseWin)
+        self.selfCourse = SelfCourseWindow(self.selfCourseWin, self.user)
+
+        for i in self.not_finished:
+                    self.unchosenCourse.insert("end", i)
     
     def end_system(self):
         with open(file="%s.txt" %self.user, mode="w", encoding="utf-8") as file:
@@ -530,8 +533,9 @@ class MainWindow(tk.Frame):
     
 class SelfCourseWindow(tk.Frame):
 
-    def __init__(self, master):
+    def __init__(self, master, user):
         self.master = master
+        self.user = user
         self.master.geometry('+500+300')
         self.createWindow()
 
@@ -542,15 +546,18 @@ class SelfCourseWindow(tk.Frame):
         self.lblCourseName = tk.Label(self.master, text = "課程名:", height = 1, width = 6, font = f3)
         self.txtCourseName = tk.Text(self.master, height = 1, width = 8, font = f3)
         self.lblCourseType = tk.Label(self.master, text = "課程類型:", height = 1, width = 6, font = f3)
-        self.comboType = ttk.Combobox(self.master, values = ["系定選修", "一般選修", "共同必修", "體育", "其他"], height = 3, width = 8, font = f3)
+        self.comboType = ttk.Combobox(self.master, values = ["系定選修", "一般選修", "共同必修", "體育", "其他"], height = 5, width = 8, font = f3)
         self.lblCredit = tk.Label(self.master, text = "學分數:", height = 1, width = 6, font = f3)
         self.comboCredit = ttk.Combobox(self.master, values = ["0", "1", "2", "3", "4", "5"], height = 5, width = 8, font = f3)
         self.lblCourseTime = tk.Label(self.master, text = "課程時間:", height = 1, width = 6, font = f3)
+        self.comboSemester = ttk.Combobox(self.master, values = ["上學期", "下學期"], height = 5, width = 5, font = f3)
         self.comboWeekday = ttk.Combobox(self.master, values = ["週一", "週二", "週三", "週四", "週五"], height = 5, width = 5, font = f3)
         self.comboPeriod = ttk.Combobox(self.master, values = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D"], height = 8, width = 5, font = f3)
-        self.btnAddTime = tk.Button(self.master, text = "加入時段", height = 1, width = 6, font = f3)
-        self.btnApply = tk.Button(self.master, text = "加入課程", height = 1, width = 6, font = f3)
-        self.cvsMain = tk.Canvas(self.master, width = 300, height = 300, bg = "white")
+        self.btnAddTime = tk.Button(self.master, text = "加入時段", height = 1, width = 6, font = f3, command = self.addTime)
+        self.btnApply = tk.Button(self.master, text = "加入課程", height = 1, width = 6, font = f3, command = self.addSelfCourse)
+        self.lblTime = tk.Label(self.master, height = 1, width = 10, font = f3)
+        self.lblCourse = tk.Label(self.master, height = 10, width = 10, font = f3)
+        self.btnEndSection = tk.Button(self.master, text = "加入完成", height = 1, width = 6, font = f3, command = self.finishRecording)
 
         self.lblSelfExp.grid(row = 0, column = 0, columnspan = 4, sticky = tk.NE + tk.SW)
         self.lblCourseName.grid(row = 1, column = 1, sticky = tk.NE + tk.SW)
@@ -560,17 +567,57 @@ class SelfCourseWindow(tk.Frame):
         self.lblCredit.grid(row = 3, column = 1, sticky = tk.NE + tk.SW)
         self.comboCredit.grid(row = 3, column = 2, sticky = tk.NE + tk.SW)
         self.lblCourseTime.grid(row = 4, column = 1, sticky = tk.NE + tk.SW)
-        self.comboWeekday.grid(row = 4, column = 2, sticky = tk.NE + tk.SW)
-        self.comboPeriod.grid(row = 5, column = 2, sticky = tk.NE + tk.SW)
-        self.btnAddTime.grid(row = 6, column = 2, sticky = tk.NE + tk.SW)
-        self.btnApply.grid(row = 7, column = 1, columnspan = 2, sticky = tk.NE + tk.SW)
-        self.cvsMain.grid(row = 8, column = 0, columnspan = 3, sticky = tk.NE + tk.SW)
+        self.comboSemester.grid(row = 4, column = 2, sticky = tk.NE + tk.SW)
+        self.comboWeekday.grid(row = 5, column = 2, sticky = tk.NE + tk.SW)
+        self.comboPeriod.grid(row = 6, column = 2, sticky = tk.NE + tk.SW)
+        self.btnAddTime.grid(row = 7, column = 2, sticky = tk.NE + tk.SW)
+        self.btnApply.grid(row = 8, column = 1, columnspan = 2, sticky = tk.NE + tk.SW)
+        self.lblTime.grid(row = 9, column = 0, columnspan = 3, sticky = tk.NE + tk.SW)
+        self.lblCourse.grid(row = 10, rowspan = 10, column = 0, columnspan = 8, sticky = tk.NE + tk.SW)
+        self.btnEndSection.grid(row = 21, column = 9, sticky = tk.NE + tk.SW)
     
-    # def AddTime(self):
-    #     self.cvsMain.create_text(100,10,fill="darkblue",font="Times 20 italic bold", text="Click the bubbles that are multiples of two.")
+    def addTime(self):
+        weekday = self.comboWeekday.get()
+        period = self.comboPeriod.get()
+        if len(self.lblTime.cget("text")) == 0:
+            self.lblTime.configure(text = weekday + " " + period)
+        else:
+            self.lblTime.configure(text = self.lblTime.cget("text") + "," + weekday + " " + period)
+    
+    def addSelfCourse(self):
+        toDay = {"週一":1, "週二":2, "週三":3, "週四":4, "週五":5}
+        course = self.txtCourseName.get("1.0", "end-1c")
+        courseType = self.comboType.get()
+        courseCredit = self.comboCredit.get()
+        semester = self.comboSemester.get()
+        courseTime = self.lblTime.cget("text")
+        time = courseTime.split(",")
+        if len(self.lblCourse.cget("text")) == 0:
+            self.lblCourse.configure(text = course)
+        else:
+            self.lblCourse.configure(text = self.lblCourse.cget("text") + "\n" + course)
+        self.lblTime.configure(text = "")
 
-        
+        try:
+            with open(file="%sSelfCourse.txt" %self.user, mode="a", encoding="utf-8") as file:
+                file.write(course + " " + courseCredit + " ")
+                period = []
+                temp = ""
+                for i in time:
+                    a = i.split(" ")
+                    temp += str(toDay[a[0]] * 16 + int(a[1]) + 1) + "," + "1" + " "
+                temp = temp[0:-1]
+
+                if semester == "上學期":
+                    file.write("11" + " " + temp + " 無 無")
+                else:
+                    file.write("12" + " " + temp + " 無 無")
+        except:
+            with open(file="%sSelfCourse.txt" %self.user, mode="w", encoding="utf-8") as file:
+                data = file.readline().rstrip("\n").split(",")
     
+    def finishRecording(self):
+        self.master.destroy()
 
 appUser = ""
 root = tk.Tk()
