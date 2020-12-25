@@ -150,57 +150,6 @@ class SignUpWindow(tk.Frame):
         tk.messagebox.showinfo('註冊','已替您建立您的帳戶')
         root.destroy()
 
-class RecordWindow(tk.Frame):
-
-    def __init__(self, master, user):
-        self.master = master
-        self.user = user
-        tk.Frame.__init__(self)
-        self.grid()
-        self.createWindow()
-
-    def createWindow(self):
-        f1 = tkFont.Font(size = 16, family = "jf open 粉圓 1.1")
-        f2 = tkFont.Font(size = 16, family = "標楷體")
-
-        self.credit, self.no_credit, self.not_finished, self.pastCourse, self.required_subjects, self.pastTime = credit_no_credit(self.user)
-
-        self.lblName = tk.Label(self, text = "%s的修課紀錄" %self.user, height = 1, width = 10, font = f1)
-        self.lblExp = tk.Label(self, text = "來初始化你過去已修的課程ㄅ", height = 1, width = 40, font = f2)
-
-        self.leftFrame = tk.LabelFrame(text="經濟系課程列表", font="標楷體 16")
-        self.leftFrame.config(highlightbackground="#888888", highlightthickness=3)
-        self.sb1 = tk.Scrollbar(self.leftFrame)
-        
-        self.unchosenCourse = tk.Listbox(self.leftFrame, width=20, height=24, yscrollcommand=self.sb1.set)
-        self.sb1.config(command=self.unchosenCourse.yview)
-        for i in self.not_finished:
-            self.unchosenCourse.insert("end", i)
-        self.unchosenCourse.bind("<ButtonRelease-1>")
-
-        self.rightFrame = tk.LabelFrame(text="已選擇課程列表", font="標楷體 16")
-        self.rightFrame.config(highlightbackground="#888888", highlightthickness=3)
-        self.sb2 = tk.Scrollbar(self.rightFrame)
-        
-        self.chosenCourse = tk.Listbox(self.rightFrame, width=20, height=24, yscrollcommand=self.sb2.set)
-        
-        # self.sb2.config(command=self.chosenCourse.yview)
-        # for i in range(len(self.required_subjects)):
-        #     for j in range(len(self.pastCourse)):
-        #         if self.required_subjects[i][0] == self.pastCourse[j]:
-        #             self.chosenCourse.insert("end", self.pastCourse[j])
-        #             break
-        # self.chosenCourse.bind("<ButtonRelease-1>", self.high_light_course)
-
-        self.lblExp.grid(row = 1, column = 1, columnspan = 4, sticky = tk.NE + tk.SW)
-        self.lblName.grid(row = 0, column = 0, columnspan = 2, sticky = tk.NE + tk.SW)
-        self.leftFrame.grid(row = 2, rowspan = 4, column = 0, columnspan = 3, sticky = tk.NE + tk.SW)
-        self.sb1.pack(side="right", fill="y")
-        self.unchosenCourse.pack(side="left")
-
-        self.rightFrame.grid(row = 2, rowspan = 4, column = 2, columnspan = 3, sticky = tk.NE + tk.SW)
-        self.sb2.pack(side="right", fill="y")
-        self.chosenCourse.pack(side="left")
 
 class MainWindow(tk.Frame):
     
@@ -405,16 +354,13 @@ class MainWindow(tk.Frame):
         self.selfCourseWin = tk.Toplevel(self)
         self.selfCourse = SelfCourseWindow(self.selfCourseWin, self.user)
 
-        for i in self.not_finished:
-                    self.unchosenCourse.insert("end", i)
-    
+
     def end_system(self):
         with open(file="%s.txt" %self.user, mode="w", encoding="utf-8") as file:
             file.write(self.department + "," + self.year + "\n")
             for i in range(len(self.pastCourse)):
                 file.write(self.pastCourse[i] + " " + str(self.pastTime[i]) + "\n")
         win.destroy()
-
 
     
     def createWindow(self):
@@ -614,7 +560,18 @@ class SelfCourseWindow(tk.Frame):
                     file.write("12" + " " + temp + " 無 無")
         except:
             with open(file="%sSelfCourse.txt" %self.user, mode="w", encoding="utf-8") as file:
-                data = file.readline().rstrip("\n").split(",")
+                file.write(course + " " + courseCredit + " ")
+                period = []
+                temp = ""
+                for i in time:
+                    a = i.split(" ")
+                    temp += str(toDay[a[0]] * 16 + int(a[1]) + 1) + "," + "1" + " "
+                temp = temp[0:-1]
+
+                if semester == "上學期":
+                    file.write("11" + " " + temp + " 無 無")
+                else:
+                    file.write("12" + " " + temp + " 無 無")
     
     def finishRecording(self):
         self.master.destroy()
