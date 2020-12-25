@@ -25,12 +25,14 @@ def credit_no_credit(user):
             if a[0] == "系定選修":
                 break
             required_subjects.append(a)
-        
-        with open(file="%sSelfCourse.txt" %user, mode="r", encoding="utf-8") as file:
-            line = file.readline().strip("\n").split(" ")
-            while line != [""]:
-                required_subjects.append(line)
+        try:
+            with open(file="%sSelfCourse.txt" %user, mode="r", encoding="utf-8") as file:
                 line = file.readline().strip("\n").split(" ")
+                while line != [""]:
+                    required_subjects.append(line)
+                    line = file.readline().strip("\n").split(" ")
+        except:
+            pass
 
         # 建立已完成課程名單
         finished = dict()
@@ -395,13 +397,13 @@ class MainWindow(tk.Frame):
         self.courseTable = tk.LabelFrame()
         self.courseTable.config(height=675, width=540, relief="flat", bd=0)
         self.courseTable.config(highlightbackground="#888888", highlightthickness=5)
-        self.courseTable.place(x=680, y=40)
+        self.courseTable.place(x=520, y=40)
         self.lastSemesterBtn = tk.Button(text="⇦", font="標楷體 24 bold", relief="flat", command=self.lastSemester)
-        self.lastSemesterBtn.place(x=900, y=725, anchor=tk.CENTER)
+        self.lastSemesterBtn.place(x=840, y=725, anchor=tk.CENTER)
         self.nextSemesterBtn = tk.Button(text="⇨", font="標楷體 24 bold", relief="flat", command=self.nextSemester)
-        self.nextSemesterBtn.place(x=1120, y=725, anchor=tk.CENTER)
+        self.nextSemesterBtn.place(x=1060, y=725, anchor=tk.CENTER)
         self.yearLabel = tk.Label(text="", font="標楷體 20")
-        self.yearLabel.place(x=1010, y=725, anchor=tk.CENTER)
+        self.yearLabel.place(x=950, y=725, anchor=tk.CENTER)
 
         days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         lessonCode = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "A", "B", "C", "D"]
@@ -428,7 +430,7 @@ class MainWindow(tk.Frame):
         self.leftFrame = tk.LabelFrame(text="未選擇課程列表", font="標楷體 16")
         self.leftFrame.config(height=350, width=200, relief="flat", bd=0)
         self.leftFrame.config(highlightbackground="#888888", highlightthickness=3)
-        self.leftFrame.place(x=45, y=280)
+        self.leftFrame.place(x=45, y=260)
         self.sb1 = tk.Scrollbar(self.leftFrame)
         self.sb1.pack(side="right", fill="y")
         self.unchosenCourse = tk.Listbox(self.leftFrame, width=20, height=24, yscrollcommand=self.sb1.set)
@@ -439,14 +441,14 @@ class MainWindow(tk.Frame):
         self.unchosenCourse.bind("<ButtonRelease-1>", self.high_light_course)
         
         self.leftCancelBtn = tk.Button(text="取消", height=1, width=8, command=self.cancel)
-        self.leftCancelBtn.place(x=136, y=710)
+        self.leftCancelBtn.place(x=146, y=710)
         self.leftConfirmBtn = tk.Button(text="加選", height=1, width=8, command=self.add_course)
-        self.leftConfirmBtn.place(x=52, y=710)
+        self.leftConfirmBtn.place(x=32, y=710)
         
         self.rightFrame = tk.LabelFrame(text="已選擇課程列表", font="標楷體 16")
         self.rightFrame.config(height=350, width=200, relief="flat", bd=0)
         self.rightFrame.config(highlightbackground="#888888", highlightthickness=3)
-        self.rightFrame.place(x=300, y=280)
+        self.rightFrame.place(x=300, y=260)
         self.sb2 = tk.Scrollbar(self.rightFrame)
         self.sb2.pack(side="right", fill="y")
         self.chosenCourse = tk.Listbox(self.rightFrame, width=20, height=24, yscrollcommand=self.sb2.set)
@@ -457,12 +459,12 @@ class MainWindow(tk.Frame):
         self.chosenCourse.bind("<ButtonRelease-1>", self.high_light_course)
         
         self.rightCancelBtn = tk.Button(text="取消", height=1, width=8, command=self.cancel)
-        self.rightCancelBtn.place(x=391, y=710)
+        self.rightCancelBtn.place(x=401, y=710)
         self.rightConfirmBtn = tk.Button(text="退選", height=1, width=8, command=self.drop_course)
-        self.rightConfirmBtn.place(x=307, y=710)
+        self.rightConfirmBtn.place(x=287, y=710)
 
-        self.selfCourseBtn = tk.Button(text="加入個人課程", height=2, width=10, font=f1, command=self.addSelfCourse)
-        self.selfCourseBtn.place(x=50, y=220)
+        self.selfCourseBtn = tk.Button(text="加入個人課程", height=1, width=8, font="標楷體 16", command=self.addSelfCourse)
+        self.selfCourseBtn.place(x=50, y=200)
         
         self.endBtn = tk.Button(text="結束並存檔", pady=2, padx=2, command=self.end_system)
         self.endBtn.place(x=1250, y=725)
@@ -511,22 +513,22 @@ class SelfCourseWindow(tk.Frame):
         self.lblCourse = tk.Label(self.master, height = 10, width = 10, font = f3)
         self.btnEndSection = tk.Button(self.master, text = "加入完成", height = 1, width = 6, font = f3, command = self.finishRecording)
 
-        self.lblSelfExp.grid(row = 0, column = 0, columnspan = 4, sticky = tk.NE + tk.SW)
-        self.lblCourseName.grid(row = 1, column = 1, sticky = tk.NE + tk.SW)
-        self.txtCourseName.grid(row = 1, column = 2, sticky = tk.NE + tk.SW)
-        self.lblCourseType.grid(row = 2, column = 1, sticky = tk.NE + tk.SW)
-        self.comboType.grid(row = 2, column = 2, sticky = tk.NE + tk.SW)
-        self.lblCredit.grid(row = 3, column = 1, sticky = tk.NE + tk.SW)
-        self.comboCredit.grid(row = 3, column = 2, sticky = tk.NE + tk.SW)
-        self.lblCourseTime.grid(row = 4, column = 1, sticky = tk.NE + tk.SW)
-        self.comboSemester.grid(row = 4, column = 2, sticky = tk.NE + tk.SW)
-        self.comboWeekday.grid(row = 5, column = 2, sticky = tk.NE + tk.SW)
-        self.comboPeriod.grid(row = 6, column = 2, sticky = tk.NE + tk.SW)
-        self.btnAddTime.grid(row = 7, column = 2, sticky = tk.NE + tk.SW)
-        self.btnApply.grid(row = 8, column = 1, columnspan = 2, sticky = tk.NE + tk.SW)
-        self.lblTime.grid(row = 9, column = 0, columnspan = 3, sticky = tk.NE + tk.SW)
-        self.lblCourse.grid(row = 10, rowspan = 10, column = 0, columnspan = 8, sticky = tk.NE + tk.SW)
-        self.btnEndSection.grid(row = 21, column = 9, sticky = tk.NE + tk.SW)
+        self.lblSelfExp.grid(row = 1, column = 1, columnspan = 4, sticky = tk.NE + tk.SW)
+        self.lblCourseName.grid(row = 2, column = 1, sticky = tk.NE + tk.SW)
+        self.txtCourseName.grid(row = 2, column = 2, sticky = tk.NE + tk.SW)
+        self.lblCourseType.grid(row = 3, column = 1, sticky = tk.NE + tk.SW)
+        self.comboType.grid(row = 3, column = 2, sticky = tk.NE + tk.SW)
+        self.lblCredit.grid(row = 4, column = 1, sticky = tk.NE + tk.SW)
+        self.comboCredit.grid(row = 4, column = 2, sticky = tk.NE + tk.SW)
+        self.lblCourseTime.grid(row = 5, column = 1, sticky = tk.NE + tk.SW)
+        self.comboSemester.grid(row = 5, column = 2, sticky = tk.NE + tk.SW)
+        self.comboWeekday.grid(row = 6, column = 2, sticky = tk.NE + tk.SW)
+        self.comboPeriod.grid(row = 7, column = 2, sticky = tk.NE + tk.SW)
+        self.btnAddTime.grid(row = 8, column = 2, sticky = tk.NE + tk.SW)
+        self.btnApply.grid(row = 9, column = 1, columnspan = 2, sticky = tk.NE + tk.SW)
+        self.lblTime.grid(row = 10, column = 0, columnspan = 3, sticky = tk.NE + tk.SW)
+        self.lblCourse.grid(row = 11, rowspan = 10, column = 0, columnspan = 8, sticky = tk.NE + tk.SW)
+        self.btnEndSection.grid(row = 22, column = 8, sticky = tk.NE + tk.SW)
     
     def addTime(self):
         weekday = self.comboWeekday.get()
@@ -553,6 +555,7 @@ class SelfCourseWindow(tk.Frame):
                 line = file.readline().strip("\n").split(" ")
     
     def addSelfCourse(self):
+
         if(self.txtCourseName.get("1.0", "end-1c") != "" and self.comboType.get() != "" and
            self.comboCredit.get() != "" and self.comboSemester.get() != "" and
            self.lblTime.cget("text") != ""):
@@ -594,10 +597,18 @@ class SelfCourseWindow(tk.Frame):
                     temp = temp[0:-1]
 
                     if semester == "上學期":
-                        file.write("11" + " " + temp + " 無 無")
+                        file.write("11" + " " + temp + " 無 無" + "\n")
                     else:
-                        file.write("12" + " " + temp + " 無 無")
+                        file.write("12" + " " + temp + " 無 無" + "\n")
+            self.txtCourseName.delete("1.0", tk.END)
+            self.comboType.set("")
+            self.comboWeekday.set("")
+            self.comboSemester.set("")
+            self.comboPeriod.set("")
+            self.comboCredit.set("")
             self.self_to_not_finished()
+        else:
+            tk.messagebox.showinfo('加入課程','輸入資訊不完整')
     
     def finishRecording(self):
         self.master.destroy()
