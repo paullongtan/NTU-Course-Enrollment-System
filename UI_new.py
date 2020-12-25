@@ -371,11 +371,7 @@ class MainWindow(tk.Frame):
                 file.write(self.pastCourse[i] + " " + str(self.pastTime[i]) + "\n")
         win.destroy()
 
-    def createWindow(self):
-
-        f1 = tkFont.Font(size = 16, family = "jf open 粉圓 1.1")
-        f3 = tkFont.Font(size = 16, family = "標楷體")
-        
+    def createWindow(self):      
         self.courseData()
         self.userData = tk.LabelFrame(text="PERSONAL DATA", font="TimesNewRoman 16 bold")
         self.userData.config(height=220, width=600, relief="flat", bd=10)
@@ -390,7 +386,7 @@ class MainWindow(tk.Frame):
         self.creditEarned = tk.Label(self.userData, text="● 已修習學分數：%s" %self.credit, font="標楷體")
         self.creditEarned.place(x=10, y=60)
         self.creditLack = tk.Label(self.userData, text="● 尚需學分數： %s" %self.no_credit, font="標楷體")
-        self.creditLack.place(x=10, y=110)
+        self.creditLack.place(x=10, y=85)
         
         self.semesterDisplay  = 1
         self.gradeDisplay = SCHOOL_YEAR - int(self.year) + 1
@@ -463,7 +459,7 @@ class MainWindow(tk.Frame):
         self.rightConfirmBtn = tk.Button(text="退選", height=1, width=8, command=self.drop_course)
         self.rightConfirmBtn.place(x=287, y=710)
 
-        self.selfCourseBtn = tk.Button(text="加入個人課程", height=1, width=8, font="標楷體 16", command=self.addSelfCourse)
+        self.selfCourseBtn = tk.Button(text="加入個人課程", height=1, width=8, command=self.addSelfCourse)
         self.selfCourseBtn.place(x=50, y=200)
         
         self.endBtn = tk.Button(text="結束並存檔", pady=2, padx=2, command=self.end_system)
@@ -490,7 +486,8 @@ class SelfCourseWindow(tk.Frame):
     def __init__(self, master, user):
         self.master = master
         self.user = user
-        self.master.geometry('+500+300')
+        self.master.geometry('600x500+400+200')
+        self.master.resizable(0,0)
         self.createWindow()
 
     def createWindow(self):
@@ -506,12 +503,22 @@ class SelfCourseWindow(tk.Frame):
         self.lblCourseTime = tk.Label(self.master, text = "課程時間:", height = 1, width = 6, font = f3)
         self.comboSemester = ttk.Combobox(self.master, values = ["上學期", "下學期"], height = 5, width = 5, font = f3)
         self.comboWeekday = ttk.Combobox(self.master, values = ["週一", "週二", "週三", "週四", "週五"], height = 5, width = 5, font = f3)
-        self.comboPeriod = ttk.Combobox(self.master, values = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D"], height = 8, width = 5, font = f3)
+        self.comboPeriod = ttk.Combobox(self.master, values = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D"], height = 8, width = 5, font = f3)
         self.btnAddTime = tk.Button(self.master, text = "加入時段", height = 1, width = 6, font = f3, command = self.addTime)
         self.btnApply = tk.Button(self.master, text = "加入課程", height = 1, width = 6, font = f3, command = self.addSelfCourse)
-        self.lblTime = tk.Label(self.master, height = 1, width = 10, font = f3)
-        self.lblCourse = tk.Label(self.master, height = 10, width = 10, font = f3)
         self.btnEndSection = tk.Button(self.master, text = "加入完成", height = 1, width = 6, font = f3, command = self.finishRecording)
+
+        self.timeTable = tk.LabelFrame(self.master)
+        self.timeTable.config(height=150, width=200, relief="flat", bd=0)
+        self.timeTable.config(highlightbackground="#888888", highlightthickness=5)
+        self.timeTable.place(x=340, y=20)
+        self.courseTable = tk.LabelFrame(self.master)
+        self.courseTable.config(height=200, width=300, relief="flat", bd=0)
+        self.courseTable.config(highlightbackground="#888888", highlightthickness=5)
+        self.courseTable.place(x=20, y=250)
+
+        self.lblTime = tk.Label(self.timeTable, height = 3, width = 15, anchor = "nw", font = f3)
+        self.lblCourse = tk.Label(self.courseTable, height = 8, width = 15, anchor = "nw", font = f3)
 
         self.lblSelfExp.grid(row = 1, column = 1, columnspan = 4, sticky = tk.NE + tk.SW)
         self.lblCourseName.grid(row = 2, column = 1, sticky = tk.NE + tk.SW)
@@ -526,9 +533,9 @@ class SelfCourseWindow(tk.Frame):
         self.comboPeriod.grid(row = 7, column = 2, sticky = tk.NE + tk.SW)
         self.btnAddTime.grid(row = 8, column = 2, sticky = tk.NE + tk.SW)
         self.btnApply.grid(row = 9, column = 1, columnspan = 2, sticky = tk.NE + tk.SW)
-        self.lblTime.grid(row = 10, column = 0, columnspan = 3, sticky = tk.NE + tk.SW)
-        self.lblCourse.grid(row = 11, rowspan = 10, column = 0, columnspan = 8, sticky = tk.NE + tk.SW)
-        self.btnEndSection.grid(row = 22, column = 8, sticky = tk.NE + tk.SW)
+        self.lblTime.place(x = 0, y = 0)
+        self.lblCourse.place(x = 0, y = 0)
+        self.btnEndSection.place(x = 490, y =460)
     
     def addTime(self):
         weekday = self.comboWeekday.get()
@@ -624,6 +631,7 @@ print(type(app.master))
 
 win = tk.Tk()
 win.geometry("1400x780+60+10")
+win.resizable(0,0)
 main = MainWindow(win, app.user)
 win.title("Course Selection Supporting System")
 
