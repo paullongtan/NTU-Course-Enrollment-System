@@ -395,11 +395,11 @@ class MainWindow(tk.Frame):
         self.courseTable.config(highlightbackground="#888888", highlightthickness=5)
         self.courseTable.place(x=520, y=40)
         self.lastSemesterBtn = tk.Button(text="⇦", font="標楷體 24 bold", relief="flat", command=self.lastSemester)
-        self.lastSemesterBtn.place(x=840, y=725, anchor=tk.CENTER)
+        self.lastSemesterBtn.place(x=840, y=750, anchor=tk.CENTER)
         self.nextSemesterBtn = tk.Button(text="⇨", font="標楷體 24 bold", relief="flat", command=self.nextSemester)
-        self.nextSemesterBtn.place(x=1060, y=725, anchor=tk.CENTER)
+        self.nextSemesterBtn.place(x=1060, y=750, anchor=tk.CENTER)
         self.yearLabel = tk.Label(text="", font="標楷體 20")
-        self.yearLabel.place(x=950, y=725, anchor=tk.CENTER)
+        self.yearLabel.place(x=950, y=750, anchor=tk.CENTER)
 
         days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         lessonCode = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "A", "B", "C", "D"]
@@ -532,7 +532,7 @@ class SelfCourseWindow(tk.Frame):
         self.comboWeekday.grid(row = 6, column = 2, sticky = tk.NE + tk.SW)
         self.comboPeriod.grid(row = 7, column = 2, sticky = tk.NE + tk.SW)
         self.btnAddTime.grid(row = 8, column = 2, sticky = tk.NE + tk.SW)
-        self.btnApply.grid(row = 9, column = 1, columnspan = 2, sticky = tk.NE + tk.SW)
+        self.btnApply.grid(row = 9, column = 2, sticky = tk.NE + tk.SW)
         self.lblTime.place(x = 0, y = 0)
         self.lblCourse.place(x = 0, y = 0)
         self.btnEndSection.place(x = 490, y =460)
