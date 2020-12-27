@@ -260,7 +260,7 @@ class MainWindow(tk.Frame):
                             if conditionFit == True and b[0] != "無":
                                 for j in range(len(b)):
                                     for k in range(len(self.pastCourse)):
-                                        if self.pastCourse[k] == b[j]:
+                                        if self.pastCourse[k] == b[j] and (self.gradeDisplay * 10 + self.semesterDisplay) > self.pastTime[k]:
                                             break
                                         elif k == len(self.pastCourse) - 1:
                                             conditionFit = False
