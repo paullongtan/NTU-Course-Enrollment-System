@@ -600,7 +600,7 @@ class SelfCourseWindow(tk.Frame):
                     temp = ""
                     for i in time:
                         a = i.split(" ")
-                        temp += str(toDay[a[0]] * 16 + int(a[1]) + 1) + "," + "1" + " "
+                        temp += str(toDay[a[0]] * 16 + int(a[1]) + 1) + "," + "1" + ","
                     temp = temp[0:-1]
 
                     if semester == "上學期":
