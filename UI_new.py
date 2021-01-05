@@ -169,10 +169,13 @@ class MainWindow(tk.Frame):
         tk.Frame.__init__(self)
         self.createWindow()
 
+    # 在課表上顯示課程
     def courseShow(self):
+        # 先將課表上所有格子的文字初始化
         for i in range(17, 112):
             if i % 16 != 0:
                 self.curriculum[i].config(text="", bg=self.defaultBG)
+        # 依據學期與課程的選擇顯示課程
         for i in range(len(self.pastCourse)):
             for j in range(len(self.required_subjects)):
                 if(self.required_subjects[j][0] == self.pastCourse[i] and
@@ -183,42 +186,63 @@ class MainWindow(tk.Frame):
                         for m in range(int(a[k * 2 + 1])):
                             self.curriculum[int(a[k * 2]) + m].config(text="%s" % self.required_subjects[j][0])
                     break
+        # 更新顯示的學期
         self.yearLabel.config(text="%s%s" % (self.gradeTrans[self.gradeDisplay], self.semesterTrans[self.semesterDisplay]))
 
+    # 將課表切換至上學期
     def lastSemester(self):
+        # 更新學期
         self.semesterDisplay = self.semesterDisplay % 2 + 1
         if self.semesterDisplay == 2:
             self.gradeDisplay -= 1
+
+        # 更新課表顯示的課程
         self.courseShow()
 
+        # 若為大一上則無法再點選「上學期」的按鍵
         if self.gradeDisplay == 1 and self.semesterDisplay == 1:
             self.lastSemesterBtn.config(state="disabled")
         if self.gradeDisplay == 4 and self.semesterDisplay == 1:
             self.nextSemesterBtn.config(state="normal")
+
+        # 若課程列表有點選的課程，則根據狀態改變課表欄位的顏色
         if self.unchosenCourse.curselection() != () or self.chosenCourse.curselection() != ():
             self.high_light_course("<ButtonRelease-1>")
 
+    # 將課表切換至下學期
     def nextSemester(self):
+        # 更新學期
         self.semesterDisplay = self.semesterDisplay % 2 + 1
         if self.semesterDisplay == 1:
             self.gradeDisplay += 1
+
+        # 更新課表顯示的課程
         self.courseShow()
 
+        # 若為大四下則無法再點選「上學期」的按鍵 (目前系統先著重於四年內的選課)
         if self.gradeDisplay == 4 and self.semesterDisplay == 2:
             self.nextSemesterBtn.config(state="disabled")
         if self.gradeDisplay == 1 and self.semesterDisplay == 2:
             self.lastSemesterBtn.config(state="normal")
+
+        # 若課程列表有點選的課程，則根據狀態改變課表欄位的顏色
         if self.unchosenCourse.curselection() != () or self.chosenCourse.curselection() != ():
             self.high_light_course("<ButtonRelease-1>")
 
+    # 若課程列表有點選的課程，則根據狀態改變課表欄位的顏色
     def high_light_course(self, event):
+        # 先將所有欄位顏色初始化
         for i in range(17, 112):
             if i % 16 != 0:
                 self.curriculum[i].config(bg=self.defaultBG)
+
+        # 判斷滑鼠當前點選的課程在已選還是未選課程，再讀入資料
         if self.unchosenCourse.curselection() != ():
             courseName = self.unchosenCourse.get(self.unchosenCourse.curselection())
         else:
             courseName = self.chosenCourse.get(self.chosenCourse.curselection())
+
+        # 根據狀況決定顯示顏色，預設為綠色(未考慮前置課程擋修情況下，可以選課)
         timeFree = "green"
         for i in range(len(self.required_subjects)):
             if self.required_subjects[i][0] == courseName:
@@ -226,37 +250,48 @@ class MainWindow(tk.Frame):
                     (self.gradeDisplay >= int(int(self.required_subjects[i][2]) / 10))):
                     a = self.required_subjects[i][3].split(",")
                     for j in range(len(self.pastTime)):
+                        # 若課表內課程即為滑鼠點選的課程，顯示黃色
                         if(self.pastCourse[j] == courseName and
                            self.gradeDisplay == int(int(self.pastTime[j]) / 10) and
                            self.semesterDisplay == int(int(self.pastTime[j]) % 10)):
                             timeFree = "yellow"
                             continue
+
+                    # 若非課程本身，則判斷是否衝堂，衝堂則顯示紅色
                     if timeFree != "yellow":
                         for j in range(int(len(a) / 2)):
                             for k in range(int(a[j * 2 + 1])):
                                 if(self.curriculum[int(a[j * 2]) + k].cget("text") != ""):
                                     timeFree = "red"
                                     break
+
+                    # 在課表上顯示顏色
                     for j in range(int(len(a) / 2)):
                         for k in range(int(a[j * 2 + 1])):
                             self.curriculum[int(a[j * 2]) + k].config(bg=timeFree)
                     break
 
+    # 將課表上所有欄位顏色初始化
     def cancel(self):
         for i in range(17, 112):
             if i % 16 != 0:
                 self.curriculum[i].config(bg=self.defaultBG)
 
+    # 加選課程
     def add_course(self):
+        # 確認滑鼠點選的課程在未選擇課程列表內
         if self.unchosenCourse.curselection() != ():
             timeFree = True
             courseName = self.unchosenCourse.get(self.unchosenCourse.curselection())
             for i in range(len(self.required_subjects)):
                 if self.required_subjects[i][0] == courseName:
+                    # 判斷選課之上/下學期是否符合
                     conditionFit = (self.semesterDisplay == int(int(self.required_subjects[i][2]) % 10))
                     if conditionFit == True:
+                        # 判斷是否達到選課年級下限
                         conditionFit = (self.gradeDisplay >= int(int(self.required_subjects[i][2]) / 10))
                         if conditionFit == True:
+                            # 判斷有無前置課程擋修
                             b = self.required_subjects[i][4].split(",")
                             if conditionFit == True and b[0] != "無":
                                 for j in range(len(b)):
@@ -271,6 +306,7 @@ class MainWindow(tk.Frame):
                     else:
                         self.error_message_semester(self.semesterTrans[int(int(self.required_subjects[i][2]) % 10)])
 
+                    # 判斷是否衝堂
                     a = self.required_subjects[i][3].split(",")
                     for j in range(int(len(a) / 2)):
                         for k in range(int(a[j * 2 + 1])):
@@ -281,6 +317,7 @@ class MainWindow(tk.Frame):
                             self.error_message_time_conflict()
                             break
 
+                    # 若所有條件皆符合，將課程加入已選列表並更新課表、學分
                     if timeFree == True and conditionFit == True:
                         for j in range(int(len(a) / 2)):
                             for k in range(int(a[j * 2 + 1])):
@@ -297,7 +334,9 @@ class MainWindow(tk.Frame):
                         self.creditLack.config(text="● 尚需學分數： %s" % self.no_credit)
                     break
 
+    # 退選課程
     def drop_course(self):
+        # 確認滑鼠點選的課程在已選擇課程列表內
         if self.chosenCourse.curselection() != ():
             courseName = self.chosenCourse.get(self.chosenCourse.curselection())
             for i in range(len(self.pastCourse)):
@@ -310,6 +349,7 @@ class MainWindow(tk.Frame):
                                 b = self.required_subjects[j][5].split(",")
                                 break
 
+                        # 確認有無被所選擇之課程擋修的課程，若有責則無法退選
                         conditionFit = True
                         if b[0] != "無":
                             for j in range(len(b)):
@@ -319,6 +359,7 @@ class MainWindow(tk.Frame):
                                         self.error_message_postcourse(b[j])
                                         break
 
+                        # 若可以退選，將課程加入未選列表並更新課表、學分
                         if conditionFit == True:
                             for j in range(int(len(a) / 2)):
                                 for k in range(int(a[j * 2 + 1])):
@@ -363,6 +404,7 @@ class MainWindow(tk.Frame):
         self.selfCourseWin = tk.Toplevel(self)
         self.selfCourse = SelfCourseWindow(self.selfCourseWin, self.user)
 
+    # 結束系統的同時，儲存資料
     def end_system(self):
         with open(file="%s.txt" % self.user, mode="w", encoding="utf-8") as file:
             file.write(self.department + "," + self.year + "\n")
@@ -370,7 +412,9 @@ class MainWindow(tk.Frame):
                 file.write(self.pastCourse[i] + " " + str(self.pastTime[i]) + "\n")
         win.destroy()
 
+    # UI建構
     def createWindow(self):
+        # 左上角的資料欄位
         self.courseData()
         self.userData = tk.LabelFrame(text="PERSONAL DATA", font="TimesNewRoman 16 bold")
         self.userData.config(height=220, width=600, relief="flat", bd=10)
@@ -378,6 +422,7 @@ class MainWindow(tk.Frame):
         self.userData.place(x=45, y=40)
         self.defaultBG = self.userData.cget("bg")
 
+        # 資料欄位的內容
         self.userName = tk.Label(self.userData, text="● 姓名：%s" % self.user, font="標楷體")
         self.userName.place(x=10, y=10)
         self.userDpt = tk.Label(self.userData, text="● 系級：%s系 %s" % (self.department, self.userGrade), font="標楷體")
@@ -387,6 +432,7 @@ class MainWindow(tk.Frame):
         self.creditLack = tk.Label(self.userData, text="● 尚需學分數： %s" % self.no_credit, font="標楷體")
         self.creditLack.place(x=10, y=85)
 
+        # 課表、學期與切換學期按鈕
         self.semesterDisplay = 1
         self.gradeDisplay = SCHOOL_YEAR - int(self.year) + 1
         self.courseTable = tk.LabelFrame()
@@ -400,6 +446,7 @@ class MainWindow(tk.Frame):
         self.yearLabel = tk.Label(text="", font="標楷體 20")
         self.yearLabel.place(x=950, y=750, anchor=tk.CENTER)
 
+        # 建構課表內容
         days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         lessonCode = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "A", "B", "C", "D"]
         self.curriculum = []
@@ -418,10 +465,12 @@ class MainWindow(tk.Frame):
             self.curriculum[i].grid(row=int(i % 16), column=int(i / 16))
             self.curriculum[i].config(highlightthickness=2)
 
+        # 課表建構完成後，顯示課程
         self.courseShow()
         if self.gradeDisplay == 1:
             self.lastSemesterBtn.config(state="disabled")
 
+        # 未選擇課程列表
         self.leftFrame = tk.LabelFrame(text="未選擇課程列表", font="標楷體 16")
         self.leftFrame.config(height=350, width=200, relief="flat", bd=0)
         self.leftFrame.config(highlightbackground="#888888", highlightthickness=3)
@@ -435,11 +484,13 @@ class MainWindow(tk.Frame):
                     self.unchosenCourse.insert("end", i)
         self.unchosenCourse.bind("<ButtonRelease-1>", self.high_light_course)
 
+        # 加選、取消按鈕
         self.leftCancelBtn = tk.Button(text="取消", height=1, width=8, command=self.cancel)
         self.leftCancelBtn.place(x=146, y=710)
         self.leftConfirmBtn = tk.Button(text="加選", height=1, width=8, command=self.add_course)
         self.leftConfirmBtn.place(x=32, y=710)
 
+        # 已選擇課程列表
         self.rightFrame = tk.LabelFrame(text="已選擇課程列表", font="標楷體 16")
         self.rightFrame.config(height=350, width=200, relief="flat", bd=0)
         self.rightFrame.config(highlightbackground="#888888", highlightthickness=3)
@@ -453,17 +504,21 @@ class MainWindow(tk.Frame):
             self.chosenCourse.insert("end", self.pastCourse[i])
         self.chosenCourse.bind("<ButtonRelease-1>", self.high_light_course)
 
+        # 退選、取消按鈕
         self.rightCancelBtn = tk.Button(text="取消", height=1, width=8, command=self.cancel)
         self.rightCancelBtn.place(x=401, y=710)
         self.rightConfirmBtn = tk.Button(text="退選", height=1, width=8, command=self.drop_course)
         self.rightConfirmBtn.place(x=287, y=710)
 
+        # 加入個人課程按鈕
         self.selfCourseBtn = tk.Button(text="加入個人課程", height=1, width=8, command=self.addSelfCourse)
         self.selfCourseBtn.place(x=50, y=200)
 
+        # 結束並存檔按鈕
         self.endBtn = tk.Button(text="結束並存檔", pady=2, padx=2, command=self.end_system)
         self.endBtn.place(x=1250, y=725)
 
+    # 讀入過去儲存的課程資訊
     def courseData(self):
 
         with open(file="%s.txt" % self.user, mode="r", encoding="utf-8") as file:
