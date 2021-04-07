@@ -6,7 +6,7 @@ SCHOOL_YEAR = 109
 
 
 def credit_no_credit(user):
-    # 回傳已經修了多少學分、剩餘必修學分、尚未完成必修
+    # 讀取使用者修課紀錄文件及使用者系級修課要求文件，並回傳已經修了多少學分、剩餘必修學分、尚未完成必修
     with open(file="%s.txt" % user, mode="r", encoding="utf-8") as file:
         line = file.readline().rstrip("\n").split(",")
         department = line[0]
@@ -64,7 +64,7 @@ def credit_no_credit(user):
     return credit, no_credit, notfinished, pastCourse, required_subjects, pastTime
 
 
-class LoginWindow(tk.Frame):
+class LoginWindow(tk.Frame):  # 登入視窗
 
     def __init__(self, master):
         self.master = master
@@ -72,41 +72,39 @@ class LoginWindow(tk.Frame):
         self.grid()
         self.createWidgets()
 
-    def createWidgets(self):
+    def createWidgets(self):  # 登入視窗元件建立
         f1 = tkFont.Font(size=24, family="jf open 粉圓 1.1")
         f3 = tkFont.Font(size=16, family="標楷體")
 
-        # self.cvsMain = tk.Canvas(self, width = 400, height = 300, bg = "white")
         self.lblExp = tk.Label(self, text="歡迎使用修課檢驗系統，請在下方輸入您的姓名", height=1, width=40, font=f3)
         self.lblName = tk.Label(self, text="姓名:", height=1, width=6, font=f3)
         self.txtName = tk.Text(self, height=1, width=8, font=f1)
         self.btnLogin = tk.Button(self, text="登入/註冊", height=1, width=6, command=self.UserCheck, font=f3)
 
         self.lblExp.grid(row=0, column=0, columnspan=4, sticky=tk.NE + tk.SW)
-        # self.cvsMain.grid(row=0, column=0, columnspan=3, sticky=tk.NE + tk.SW)
         self.lblName.grid(row=1, column=1, sticky=tk.NE + tk.SW)
         self.txtName.grid(row=1, column=2, sticky=tk.NE + tk.SW)
         self.btnLogin.grid(row=2, column=1, columnspan=2, sticky=tk.NE + tk.SW)
 
-    def UserCheck(self):
+    def UserCheck(self):  # 用於用戶檢查
         user = self.txtName.get("1.0", "end-1c")
         self.user = user
         print(user)
 
-        try:
+        try:  # 已建立name.txt，則讀取文件，確認用戶是否出現於名單中
             with open(file="name.txt", mode="r+", encoding="utf-8") as file:
                 nameList = file.readlines()
             for i in range(len(nameList)):
                 nameList[i] = nameList[i].rstrip("\n")
 
-            if user in nameList:
+            if user in nameList:  # 若已有該用戶資訊，則進入主視窗
                 self.newUser = False
                 self.master.destroy()
-            else:
+            else:  # 若沒有該用戶資訊，則進入用戶註冊視窗
                 self.newUser = True
-                self.signUpWin = tk.Toplevel(self.master)
+                self.signUpWin = tk.Toplevel(self.master)  # 建立子視窗
                 self.signUp = SignUpWindow(self.signUpWin, user)
-        except:
+        except:  # 尚未建立name.txt，前一部分會報錯，則創立name.txt，直接進入用戶註冊視窗
             with open(file="name.txt", mode="w", encoding="utf-8") as file:
                 print("New file")
             self.newUser = True
@@ -114,7 +112,7 @@ class LoginWindow(tk.Frame):
             self.signUp = SignUpWindow(self.signUpWin, user)
 
 
-class SignUpWindow(tk.Frame):
+class SignUpWindow(tk.Frame):  # 用戶註冊視窗
 
     def __init__(self, master, user):
         self.master = master
@@ -122,7 +120,7 @@ class SignUpWindow(tk.Frame):
         self.master.geometry('+500+400')
         self.createWindow()
 
-    def createWindow(self):
+    def createWindow(self):  # 視窗內容元件建立
         f3 = tkFont.Font(size=16, family="標楷體")
 
         self.lblSignExp = tk.Label(self.master, text="第一次見到您，讓我們來為您建立你專屬的修課紀錄！", height=1, width=40, font=f3)
@@ -145,20 +143,20 @@ class SignUpWindow(tk.Frame):
 
         self.txtSignName.insert(1.0, self.user)
 
-    def UserInfo(self):
+    def UserInfo(self):  # 用戶資訊紀錄
         name = self.txtSignName.get("1.0", "end-1c")
         self.master = name
         department = self.comboDpt.get()
         year = self.comboYear.get()
         self.year = year
         print(name, department, year)
-        with open(file="name.txt", mode="a", encoding="utf-8") as file:
+        with open(file="name.txt", mode="a", encoding="utf-8") as file:  # 儲存姓名
             file.write(name + "\n")
-        with open(file="%s.txt" % name, mode="w", encoding="utf-8") as file:
+        with open(file="%s.txt" % name, mode="w", encoding="utf-8") as file:  # 儲存年級及入學學年
             file.write("%s,%s\n" % (department, year))
 
-        tk.messagebox.showinfo('註冊', '已替您建立您的帳戶')
-        root.destroy()
+        tk.messagebox.showinfo('註冊', '已替您建立您的帳戶')  # 訊息視窗
+        root.destroy()  # 關閉母視窗（用戶登入視窗）
 
 
 class MainWindow(tk.Frame):
@@ -401,6 +399,10 @@ class MainWindow(tk.Frame):
         tk.messagebox.showwarning("Error!", "請先退選被擋修課程：%s" % postCourse)
 
     def addSelfCourse(self):
+        with open(file="%s.txt" % self.user, mode="w", encoding="utf-8") as file:
+            file.write(self.department + "," + self.year + "\n")
+            for i in range(len(self.pastCourse)):
+                file.write(self.pastCourse[i] + " " + str(self.pastTime[i]) + "\n")
         self.selfCourseWin = tk.Toplevel(self)
         self.selfCourse = SelfCourseWindow(self.selfCourseWin, self.user)
 
@@ -535,7 +537,7 @@ class MainWindow(tk.Frame):
         self.credit, self.no_credit, self.not_finished, self.pastCourse, self.required_subjects, self.pastTime = credit_no_credit(self.user)
 
 
-class SelfCourseWindow(tk.Frame):
+class SelfCourseWindow(tk.Frame):  # 自選課程加入視窗
 
     def __init__(self, master, user):
         self.master = master
@@ -544,7 +546,7 @@ class SelfCourseWindow(tk.Frame):
         self.master.resizable(0, 0)
         self.createWindow()
 
-    def createWindow(self):
+    def createWindow(self):  # 自選課程加入視窗元件建立
         f3 = tkFont.Font(size=16, family="標楷體")
 
         self.lblSelfExp = tk.Label(self.master, text="來加入你自己的專屬課程！", height=1, width=40, font=f3)
@@ -557,7 +559,7 @@ class SelfCourseWindow(tk.Frame):
         self.lblCourseTime = tk.Label(self.master, text="課程時間:", height=1, width=6, font=f3)
         self.comboSemester = ttk.Combobox(self.master, values=["上學期", "下學期"], height=5, width=5, font=f3)
         self.comboWeekday = ttk.Combobox(self.master, values=["週一", "週二", "週三", "週四", "週五"], height=5, width=5, font=f3)
-        self.comboPeriod = ttk.Combobox(self.master, values=["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D"], height=8, width=5, font=f3)
+        self.comboPeriod = ttk.Combobox(self.master, values=["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "A", "B", "C", "D"], height=8, width=5, font=f3)
         self.btnAddTime = tk.Button(self.master, text="加入時段", height=1, width=6, font=f3, command=self.addTime)
         self.btnApply = tk.Button(self.master, text="加入課程", height=1, width=6, font=f3, command=self.addSelfCourse)
         self.btnEndSection = tk.Button(self.master, text="加入完成", height=1, width=6, font=f3, command=self.finishRecording)
@@ -572,7 +574,7 @@ class SelfCourseWindow(tk.Frame):
         self.courseTable.place(x=20, y=250)
 
         self.lblTime = tk.Label(self.timeTable, height=3, width=15, anchor="nw", font=f3)
-        self.lblCourse = tk.Label(self.courseTable, height=8, width=15, anchor="nw", font=f3)
+        self.lblCourse = tk.Label(self.courseTable, height=8, width=20, anchor="nw", font=f3)
 
         self.lblSelfExp.grid(row=1, column=1, columnspan=4, sticky=tk.NE + tk.SW)
         self.lblCourseName.grid(row=2, column=1, sticky=tk.NE + tk.SW)
@@ -591,7 +593,7 @@ class SelfCourseWindow(tk.Frame):
         self.lblCourse.place(x=0, y=0)
         self.btnEndSection.place(x=490, y=460)
 
-    def addTime(self):
+    def addTime(self):  # 加入課程時段
         weekday = self.comboWeekday.get()
         period = self.comboPeriod.get()
         if len(self.lblTime.cget("text")) == 0:
@@ -615,12 +617,12 @@ class SelfCourseWindow(tk.Frame):
                     mainWindow.required_subjects.append(line)
                 line = file.readline().strip("\n").split(" ")
 
-    def addSelfCourse(self):
-
+    def addSelfCourse(self):  # 將自選課程資訊加入SelfCourse.txt，用於記錄自選課程
         if(self.txtCourseName.get("1.0", "end-1c") != "" and self.comboType.get() != "" and
            self.comboCredit.get() != "" and self.comboSemester.get() != "" and
-           self.lblTime.cget("text") != ""):
+           self.lblTime.cget("text") != ""):  # 課程資訊完整
             toDay = {"週一": 1, "週二": 2, "週三": 3, "週四": 4, "週五": 5}
+            nightCourse = {"A": 11, "B": 12, "C": 13, "D": 14}
             course = self.txtCourseName.get("1.0", "end-1c")
             courseType = self.comboType.get()
             courseCredit = self.comboCredit.get()
@@ -633,28 +635,38 @@ class SelfCourseWindow(tk.Frame):
                 self.lblCourse.configure(text=self.lblCourse.cget("text") + "\n" + course)
             self.lblTime.configure(text="")
 
-            try:
+            try:  # 若已建立SelfCourse.txt，則將課程資訊加入
                 with open(file="%sSelfCourse.txt" % self.user, mode="a", encoding="utf-8") as file:
                     file.write(course + " " + courseCredit + " ")
                     period = []
                     temp = ""
                     for i in time:
                         a = i.split(" ")
-                        temp += str(toDay[a[0]] * 16 + int(a[1]) + 1) + "," + "1" + ","
+                        if a[1] == "10":
+                            temp += str(toDay[a[0]] * 16 + int(a[1]) + 1) + "," + "1" + ","
+                        elif ord(a[1]) >= 65 and ord(a[1]) <= 68:
+                            temp += str(toDay[a[0]] * 16 + nightCourse[a[1]] + 1) + "," + "1" + ","
+                        else:
+                            temp += str(toDay[a[0]] * 16 + int(a[1]) + 1) + "," + "1" + ","
                     temp = temp[0:-1]
 
                     if semester == "上學期":
                         file.write("11" + " " + temp + " 無 無" + "\n")
                     else:
                         file.write("12" + " " + temp + " 無 無" + "\n")
-            except:
+            except:  # 尚未建立SelfCourse.txt，則建立該文件，並加入課程
                 with open(file="%sSelfCourse.txt" % self.user, mode="w", encoding="utf-8") as file:
                     file.write(course + " " + courseCredit + " ")
                     period = []
                     temp = ""
                     for i in time:
                         a = i.split(" ")
-                        temp += str(toDay[a[0]] * 16 + int(a[1]) + 1) + "," + "1" + ","
+                        if a[1] == "10":
+                            temp += str(toDay[a[0]] * 16 + int(a[1]) + 1) + "," + "1" + ","
+                        elif ord(a[1]) >= 65 and ord(a[1]) <= 68:
+                            temp += str(toDay[a[0]] * 16 + nightCourse[a[1]] + 1) + "," + "1" + ","
+                        else:
+                            temp += str(toDay[a[0]] * 16 + int(a[1]) + 1) + "," + "1" + ","
                     temp = temp[0:-1]
 
                     if semester == "上學期":
@@ -668,7 +680,7 @@ class SelfCourseWindow(tk.Frame):
             self.comboPeriod.set("")
             self.comboCredit.set("")
             self.self_to_not_finished()
-        else:
+        else:  # 課程資訊不完整，跳出警告視窗
             tk.messagebox.showinfo('加入課程', '輸入資訊不完整')
 
     def finishRecording(self):
@@ -678,16 +690,12 @@ appUser = ""
 root = tk.Tk()
 root.geometry('+500+400')
 app = LoginWindow(root)
-app.master.title("台大修課檢驗系統")
+app.master.title("Course Selection Supporting System")
 app.mainloop()
-
-print(type(app.master))
 
 win = tk.Tk()
 win.geometry("1400x780+60+10")
 win.resizable(0, 0)
 main = MainWindow(win, app.user)
 win.title("Course Selection Supporting System")
-
-
 win.mainloop()
